@@ -1,7 +1,114 @@
+"Module for base functionalities."
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Optional
+import httpx
+from openai import OpenAI
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.spatial.distance import cdist
 
+
+@retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))
+def openai_chat(question, 
+                system_message: Optional[str] = None, 
+                model: Optional[str] = None, 
+                api_key: Optional[str] = None, 
+                history: Optional[str] = None, 
+                **kwargs) -> str:
+    """
+    Function to interact with OpenAI chat API.
+    
+    Args:
+        question (str): The user's question.
+        system_message (str): The system's message.
+        model (str): The model to use.
+        api_key (str): The API key for authentication.
+    
+    Returns:
+        str: The response message from the chat.
+    """
+    if api_key is None:
+        raise ValueError("Please set the api_key in the params.")
+    else:
+        openai_api_key = api_key
+    if model is None:
+        raise ValueError("Please set the model name in the params.")
+        
+    if system_message is None:
+        system_message = "You are a helpful assistant."
+        print("Please set the params system_message.")
+        print('Using default system message of "You are a helpful assistant.".')
+
+    client = OpenAI(
+        api_key=openai_api_key
+    )
+    
+    messages = [{"role": "system", "content": system_message}]
+    if history is not None:
+        messages.append({"role": "user", "content": f"Chat History: {history}"})
+    messages.append({"role": "user", "content": question})
+    completion = client.chat.completions.create(
+        model=model,
+        seed=42,
+        messages=messages,
+        **kwargs
+    )
+
+    return completion.choices[0].message.content
+
+
+@retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))
+def openai_embedding(text, 
+                     model: Optional[str] = None, 
+                     api_key: Optional[str] = None,
+                     **kwargs) -> List[float]:
+    """
+    Function to interact with OpenAI embedding API.
+    
+    Args:
+        text (str): The text to embed.
+        model (str): The model to use (default is "text-embedding-3-small").
+        api_key (str): The API key for authentication.
+    
+    Returns:
+        str: The embedding of the text.
+    """
+    if api_key is None:
+        raise ValueError("Please set the api_key in the params.")
+    else:
+        openai_api_key = api_key
+    if model is None:
+        raise ValueError("Please set the model name in the params.")
+    
+    client = OpenAI(
+        api_key=openai_api_key
+    )
+    embedding = client.embeddings.create(
+        model=model,
+        input=[text],
+        **kwargs
+    )
+
+    return embedding.data[0].embedding
+
+    
+def calculate_similarity(embedding1, embedding2, mode='sklearn'):
+    """
+    Calculate the cosine similarity between two embeddings.
+
+    Args:
+        embedding1: The first embedding.
+        embedding2: The second embedding.
+
+    Returns:
+        float: The cosine similarity between the two embeddings.
+    """
+    if mode == 'sklearn':
+        return cosine_similarity([embedding1], [embedding2])[0][0]
+    else:
+        return 1 - cdist([embedding1], [embedding2], metric='cosine')
 
 
 
@@ -16,7 +123,7 @@ class Message:
     message_type: str
     message_str: str
     
-    def get_dict(self) -> dict[str, Any]:
+    def get_dict(self) -> dict[str, str]:
         """
         Get the dict representation of the message.
         
@@ -65,3 +172,47 @@ class Message:
             message_str=data["message_str"]
         )
     
+
+
+
+class BaseRetrievers(ABC):
+    """
+    Base class for retrievers.
+
+    Attributes:
+        config (Configuration): The configuration settings.
+    """
+    
+    def __init__(self):
+        pass
+
+    @classmethod
+    def retrieve(cls,
+                 **kwargs):
+        """
+        Retrieve method to instantiate the class and call the result method.
+
+        Args:
+            **kwargs: Keyword arguments.
+
+        Returns:
+            The result of the retrieved document.
+        """
+        return cls(**kwargs).result(**kwargs)
+    
+    @abstractmethod
+    def result(self, 
+               question: Any, 
+               history: str = None) -> None:
+        """
+        Abstract method to be implemented by subclasses.
+
+        Args:
+            question (str): The question to retrieve results for.
+            history (str): The history of interactions.
+
+        Returns:
+        The result of the retrieval.
+        """
+        pass
+

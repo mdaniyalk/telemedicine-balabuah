@@ -11,6 +11,7 @@ from pymongo import MongoClient
 from typing import Any, Dict
 import markdown2 as markdown
 
+from telemedicine.core.base import Message
 from telemedicine.chat import Chat
 
 @dataclass
@@ -54,7 +55,7 @@ class ChatSession:
             self.chat_session = self.deserialize_chat()
 
 
-    def post_object(self):
+    def save_session(self):
         try:
             existing_entry = self.collection.find_one({'session_id': self.session_object.session_id})
         except Exception as e:
@@ -92,12 +93,18 @@ class ChatSession:
 
 
     def serialize_chat(self):
-        pass 
-        #TODO: Return session_data as a list of serialized messages
+        serialized_history = [] 
+        for history in self.chat_session.history:
+            serialized_history.append(history.get_dict())
+        return serialized_history
 
     def deserialize_chat(self):
-        pass
-        #TODO: Return chat object with loaded history
+        history = []
+        for history_dict in self.session_object.session_data:
+            history.append(Message.load_from_dict(history_dict))
+        chat = Chat()
+        chat.history = history
+        return chat
     
 
     def get_response(self, msg: str, html=True) -> str:
@@ -113,6 +120,9 @@ class ChatSession:
         """
 
         response = self.chat_session.get_response(msg)
+        updated_session_data = self.serialize_chat()
+        self.session_object.session_data = updated_session_data
+        self.save_session()
         if html:
             response = markdown.markdown(response, extras=["tables", "cuddled-lists", "wiki-tables"])
         return response

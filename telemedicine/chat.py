@@ -11,13 +11,7 @@ from telemedicine.core.base import (
 from telemedicine.core.configuration import Configuration
 from telemedicine.core.translate import translate
 from telemedicine.core.prompt_template import change_document_template, greeting_prompt_template
-from telemedicine.retrievers import (
-    RetrieveDetailQuestion,
-    RetrieveDocuments,
-    RetrieveFinalDocuments,
-    RetrieveFromDocuments,
-    RetrievefromMultiDocuments, 
-)
+from telemedicine.retrievers import RetrieveFromDocuments
 
 
 class Chat:
@@ -118,7 +112,6 @@ class Chat:
             message_pair_str += user_message.get_message_dialogue() + '\n'
             message_pair_str += assistant_message.get_message_dialogue() + '\n'
         return message_pair_str
-    
 
 
     def get_response(self, question: str) -> str:
@@ -136,6 +129,7 @@ class Chat:
         response = self.get_final_document_answers(question)
         self.add_history('assistant', response)
         return response
+    
     
     def get_final_document_answers(self, question: str, question_embedding: List[float]) -> str:
         """
@@ -160,23 +154,3 @@ class Chat:
         response_text += "\n\n---\n\n"
         response_text += change_document_template()
         return response_text
-        
-
-    def get_ganti_dokumen_response(self: str) -> str:
-        """
-        Reset the document selection and prompt the user for a new question.
-
-        Returns:
-            str: The response prompting the user for a new question.
-        """
-        self.is_question_complete = False
-        self.path_vectorstores = None
-        self.is_document_found = False
-        self.complete_response = None
-        self.initial_question = []
-        self.additional_details = []
-        self.document_candidates = []
-        self.root_document_path = None
-        response = greeting_prompt_template()
-        return response
-    
