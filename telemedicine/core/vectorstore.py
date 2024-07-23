@@ -9,8 +9,6 @@ from tqdm import tqdm
 from langchain.vectorstores import MongoDBAtlasVectorSearch
 
 
-from telemedicine.core.base import openai_chat, openai_embedding
-from telemedicine.core.configuration import Configuration
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 from telemedicine.core.file_loader import file_loader
@@ -23,8 +21,7 @@ class VectorDB:
     """
     def __init__(self, 
                  model_name: str = None,
-                 embedding_model: str = None, 
-                 openai_api_key: str = None) -> None:
+                 embedding_model: str = None) -> None:
         """
         Initialize the VectorDB.
 
@@ -36,12 +33,10 @@ class VectorDB:
         if embedding_model is None:
             raise ValueError("Please set the embedding_model in param")
         
-        if openai_api_key is None:
-            raise ValueError("Please set the openai_api_key in param")
-        
         if model_name is None:
             raise ValueError("Please set the model_name in param")
-
+        
+        openai_api_key = os.getenv('OPENAI_API_KEY')
         self.model = model_name
         self.embedding: OpenAIEmbeddings = OpenAIEmbeddings(
             openai_api_key=openai_api_key, model=embedding_model)
@@ -63,7 +58,7 @@ class VectorDB:
             filepath (list[str]): The path to the documents.
         """
         splitted_document = []
-        for file in filepath:
+        for file in tqdm(filepath, desc="Loading documents"):
             extracted_document = file_loader(file)
             text_splitter = RecursiveTokenTextSplitter(chunk_size = 400,
                                                        chunk_overlap = 50)
@@ -147,3 +142,14 @@ class VectorDB:
             embedding=vector, k=top_k, **kwargs
         )
     
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description="Load documents from files into the vector store.")
+    parser.add_argument("--folder_path", type=str, help="The path to the folder containing the documents.")
+    args = parser.parse_args()
+
+    vectorstore = VectorDB(
+        model_name="",
+        embedding_model="text-embedding-3-small", 
+    )
+    vectorstore.load_documents_from_files(args.folder_path)
