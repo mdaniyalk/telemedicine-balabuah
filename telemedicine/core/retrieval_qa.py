@@ -5,12 +5,12 @@ from fuzzywuzzy import fuzz
 from copy import copy
 from langchain_core.callbacks import CallbackManagerForChainRun
 
-from rag.core.base import openai_chat
-from rag.core.configuration import Configuration
-from rag.core.langchain import RetrievalQA
-from rag.core.math_utils import cosine_similarity
-from rag.core.prompt_template import standalone_question_from_history
-from rag.core.thread import multithreading
+from telemedicine.core.base import openai_chat
+from telemedicine.core.configuration import Configuration
+from langchain.chains.retrieval_qa.base import RetrievalQA
+from telemedicine.core.math_utils import cosine_similarity
+from telemedicine.core.prompt_template import standalone_question_from_history
+from telemedicine.core.thread import multithreading
 
 
 class CustomRetrievalQA:
