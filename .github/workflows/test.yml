@@ -1,0 +1,29 @@
+name: Unit Test
+
+on:
+  push:
+    branches:
+      - '**'      
+
+jobs:
+  build:
+    name: Run anaconda on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        python-version: ["3.9"]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies and test
+        shell: bash -el {0}
+        run: |
+          conda env create -f environments/conda.yml
+          conda env list 
+          conda activate rag
+          python -m unittest discover tests
