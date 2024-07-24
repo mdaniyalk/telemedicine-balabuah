@@ -3,6 +3,7 @@ Module for ChatSession Class.
 """
 
 from dataclasses import dataclass
+from dotenv import load_dotenv
 import os
 import random
 import string
@@ -25,6 +26,7 @@ class ChatSession:
     Class representing a chat session.
     """
     def __init__(self):
+        load_dotenv('.env')
         self.session_id : str = None
         self.chat_session : Chat = None
         self.session_object : SessionObject = None

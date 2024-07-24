@@ -21,7 +21,8 @@ scikit-learn==1.4.0
 numpy==1.26.4
 dill==0.3.8
 fuzzywuzzy==0.18.0
-python_Levenshtein==0.25.1
+rapidfuzz==3.6.1
+python_Levenshtein==0.24.0
 Flask==3.0.3
 Flask-PyMongo==2.3.0
-certifi==2024.7.4
+certifi==2024.2.2

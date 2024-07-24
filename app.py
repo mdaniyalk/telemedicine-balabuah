@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import markdown2 as markdown
 
 from telemedicine.core.configuration import Configuration
+from telemedicine.core.paraphraser import paraphrase
 from telemedicine.session import ChatSession
 
 
@@ -28,8 +29,7 @@ def chat():
             msg = request.json.get("msg")
             session_id = request.json.get("session_id")
             response_type = request.json.get("response_type", "html")
-        config = Configuration.load("config.toml")
-        session = ChatSession(config=config)
+        session = ChatSession()
         session.load(session_id)
         if response_type == "html":
             response = session.get_response(msg)

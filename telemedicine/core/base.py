@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
+from dotenv import load_dotenv
+import os
 from typing import Any, List, Optional
 import httpx
 from openai import OpenAI
@@ -29,10 +31,15 @@ def openai_chat(question,
     Returns:
         str: The response message from the chat.
     """
+    load_dotenv(".env")
     if api_key is None:
-        raise ValueError("Please set the api_key in the params.")
+        try:
+            openai_api_key = os.getenv('OPENAI_API_KEY')
+        except Exception as e:
+            raise ValueError("Please set the api_key in the params or on the environment variable.")
     else:
         openai_api_key = api_key
+
     if model is None:
         raise ValueError("Please set the model name in the params.")
         
@@ -40,10 +47,13 @@ def openai_chat(question,
         system_message = "You are a helpful assistant."
         print("Please set the params system_message.")
         print('Using default system message of "You are a helpful assistant.".')
-
-    client = OpenAI(
-        api_key=openai_api_key
-    )
+    
+    if model == "llama3-8b-8192":
+        client = groq_wrapper()
+    else:
+        client = OpenAI(
+            api_key=openai_api_key
+        )
     
     messages = [{"role": "system", "content": system_message}]
     if history is not None:
@@ -57,6 +67,20 @@ def openai_chat(question,
     )
 
     return completion.choices[0].message.content
+
+def groq_wrapper():
+    """
+    Wrapper function to replace OpenAI with Groq API.
+    """
+    import random
+    load_dotenv(".env")
+    i = random.randint(0, 5)
+    api_key = os.getenv(f'GROQ_API_KEY_{i}')
+    client = OpenAI(
+        api_key=api_key, 
+        base_url='https://api.groq.com/openai/v1',
+    )
+    return client
 
 
 @retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))
@@ -75,8 +99,12 @@ def openai_embedding(text,
     Returns:
         str: The embedding of the text.
     """
+    load_dotenv(".env")
     if api_key is None:
-        raise ValueError("Please set the api_key in the params.")
+        try:
+            openai_api_key = os.getenv('OPENAI_API_KEY')
+        except Exception as e:
+            raise ValueError("Please set the api_key in the params or on the environment variable.")
     else:
         openai_api_key = api_key
     if model is None:

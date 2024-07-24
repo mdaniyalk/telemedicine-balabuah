@@ -1,12 +1,13 @@
 "Vector store module for managing vector databases."
 import os
+from dotenv import load_dotenv
 import pickle
 from typing import Any, Dict, List, Tuple
 import certifi
 from pymongo import MongoClient
 from tqdm import tqdm
 
-from langchain.vectorstores import MongoDBAtlasVectorSearch
+from langchain_community.vectorstores.mongodb_atlas import MongoDBAtlasVectorSearch
 
 
 from langchain_openai import OpenAIEmbeddings
@@ -35,7 +36,7 @@ class VectorDB:
         
         if model_name is None:
             raise ValueError("Please set the model_name in param")
-        
+        load_dotenv('.env')
         openai_api_key = os.getenv('OPENAI_API_KEY')
         self.model = model_name
         self.embedding: OpenAIEmbeddings = OpenAIEmbeddings(

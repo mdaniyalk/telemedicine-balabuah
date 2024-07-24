@@ -15,7 +15,7 @@ def paraphrase(text, text_type='error-msg'):
         raise ValueError(f"Invalid text type: {text_type}")
     paraphrased_text = openai_chat(
         question=prompt,
-        model="gpt-3.5-turbo",
+        model="llama3-8b-8192",
         )
     paraphrased_text = translate(paraphrased_text, from_lang='auto', to_lang='id')
     
