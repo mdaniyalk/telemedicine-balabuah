@@ -8,9 +8,7 @@ from telemedicine.core.base import (
     Message,
     calculate_similarity
 )
-from telemedicine.core.configuration import Configuration
 from telemedicine.core.translate import translate
-from telemedicine.core.prompt_template import change_document_template, greeting_prompt_template
 from telemedicine.retrievers import RetrieveFromDocuments
 
 
@@ -130,7 +128,7 @@ class Chat:
         self.add_history('assistant', response)
         return response
     
-    
+
     def get_final_document_answers(self, question: str, question_embedding: List[float]) -> str:
         """
         Retrieval agent to retrieve the final answers from the documents for the given question.
@@ -151,6 +149,4 @@ class Chat:
             config=self.config
         )
         response_text = translate(response_text, "auto", "id")
-        response_text += "\n\n---\n\n"
-        response_text += change_document_template()
         return response_text

@@ -4,7 +4,7 @@ from langchain_core.callbacks import CallbackManagerForChainRun
 from langchain.chains.retrieval_qa.base import RetrievalQA
 
 from telemedicine.core.base import openai_chat
-from telemedicine.core.prompt_template import retrieval_qa_prompt, standalone_question_from_history
+from telemedicine.core.prompt_template import standalone_question_from_history
 
 
 class CustomRetrievalQA:
