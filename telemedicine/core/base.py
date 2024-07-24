@@ -5,7 +5,6 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 from typing import Any, List, Optional
-import httpx
 from openai import OpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from sklearn.metrics.pairwise import cosine_similarity

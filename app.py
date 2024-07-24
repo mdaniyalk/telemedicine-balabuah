@@ -21,7 +21,7 @@ def start_session():
 
 @app.route("/chat", methods=["GET", "POST"])
 def chat():
-    try:
+    # try:
         msg = request.form.get("msg")
         session_id = request.form.get("session_id")
         response_type = request.form.get("response_type", "html")
@@ -39,18 +39,15 @@ def chat():
             response = session.get_response(msg, html=False)
             session.save_session()
             return jsonify(response=response)
-    except Exception as e:
-        print(e)
-        error_msg = paraphrase("An error occurred: " + str(e), text_type='error-msg')
-        if response_type == "html":
-            return markdown.markdown(error_msg)
-        elif response_type == "json":
-            return jsonify(error=error_msg)
+    # except Exception as e:
+    #     print(e)
+    #     error_msg = paraphrase("An error occurred: " + str(e), text_type='error-msg')
+    #     if response_type == "html":
+    #         return markdown.markdown(error_msg)
+    #     elif response_type == "json":
+    #         return jsonify(error=error_msg)
 
 
 
 if __name__ == "__main__":
-    config = Configuration.load("config.toml")
-    host = config.get("host")
-    port = config.get("port")
-    app.run(host=host, port=port, debug=True)
+    app.run(host='0.0.0.0', port='8000', debug=True)

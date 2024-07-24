@@ -48,24 +48,21 @@ def retrieval_qa_prompt():
     return prompt
 
 
-def multi_query_retriver_prompt(document_summary):
+def multi_query_retriver_prompt():
     """
     Generate a prompt for multi-query retrieval.
 
     Returns:
         PromptTemplate: The prompt template for multi-query retrieval.
     """
-    prompt_template = f"""
-    You are an AI Assistant who helps employees understand questions about company procedures. 
-    Most of the document are report, working instruction, manual guide, and other company procedures.
+    prompt_template = """
+    You are an AI Assistant who helps people to find information about health.
     Now, your task is to generate 2 different versions of the given user 
     question to retrieve relevant documents from a vector database. 
     By generating multiple perspectives on the user question, 
     your goal is to help the user overcome some of the limitations 
     of distance-based similarity search. Provide these alternative 
     questions separated by newlines. You can use the given document summary to generate the questions.
-    Document Summary:
-    {document_summary}
     """
     prompt_template += """
     Original question: {question}"""

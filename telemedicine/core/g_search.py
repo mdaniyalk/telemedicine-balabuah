@@ -1,52 +1,64 @@
 import os
 from dotenv import load_dotenv
 from langchain_community.utilities.google_search import GoogleSearchAPIWrapper
-from langchain.tools import Tool
+from langchain_core.documents import Document
+from langchain_community.document_transformers.html2text import Html2TextTransformer
+import requests
+from bs4 import BeautifulSoup
+
+from scipy.spatial.distance import cdist
+from telemedicine.core.embedding import get_embeddings
 
 
-def google_search(question, mode='search'):
-    """
-    Perform a Google search for the given question.
+from telemedicine.core.text_splitter import RecursiveTokenTextSplitter
+from telemedicine.core.thread import multithreading
 
-    This function initializes and configures the Google Search API by providing the necessary parameters:
-    - `api_key`: List containing Google API key and custom search engine (CSE) ID for API initialization.
-    - `question`: The search query/question.
 
-    The function utilizes the GoogleSearchAPIWrapper class to create a search function for Google.
-    It sets up the connection to the Google Search API using the specified API key and CSE ID.
+def calculate_similarity(embedding1, embedding2):
+    return 1 - cdist([embedding1], [embedding2], metric='cosine')
 
-    Parameters:
-    - `question` (str): The search query/question.
-    - `api_key` (list, optional): List containing Google API key and custom search engine (CSE) ID for API initialization. 
-      Default is None.
-
-    Returns:
-    - `result` (list): List of search results obtained from the Google Search API.
-
-    Example usage:
-    api_key = ['YOUR_GOOGLE_API_KEY', 'YOUR_CUSTOM_SEARCH_ENGINE_ID']
-    search_result = google_search(question="How does photosynthesis work?", api_key=api_key)
-    """
-
-    load_dotenv('.env')
-    google_api_key = os.getenv('google_api_key')
-    google_cse_id = os.getenv('google_cse_id')
-    search = GoogleSearchAPIWrapper(google_api_key=google_api_key, 
-                                    google_cse_id=google_cse_id, 
-                                    k=5)
-    if mode == 'search':
-        tool = Tool(
-            name="Google Search",
-            description="Search Google for recent results.",
-            func=search.run,
-        )
-        result = tool.run(question)
-    elif mode == 'link':
-        res = search.results(question, num_results=3)
-        result = ''
-        for _res in res:
-            try:
-                result+=f"- [{_res['title']}]({_res['link']})\n"
-            except Exception as _:
-                result += ''
+def google_search(question):
+    tool = GoogleSearchTool(question)
+    doc_result = tool.result()
+    result = ''
+    for doc in doc_result:
+        result+=f"{doc}\n"
     return result
+
+
+class GoogleSearchTool:
+    def __init__(self, question, num_results=2):
+        load_dotenv('.env')
+        self.google_api_key = os.getenv('GOOGLE_API_KEY')
+        self.google_cse_id = os.getenv('GOOGLE_CSE_ID')
+        self.search = GoogleSearchAPIWrapper(google_api_key=self.google_api_key, 
+                                            google_cse_id=self.google_cse_id, 
+                                            k=5)
+        self.num_results = num_results
+        self.question = question
+        self.question_embedding = get_embeddings(question)
+    
+    def result(self):
+        results = self.search.results(self.question, num_results=self.num_results)
+        _doc_result = multithreading(self._process_result, results)
+        doc_result = []
+        for doc in _doc_result:
+            doc_result.extend(doc)
+        return doc_result
+
+    def _process_result(self, result):
+        html_doc = requests.get(result['link'])
+        soup = BeautifulSoup(html_doc.text, 'html.parser')
+        _txt = soup.get_text()
+        _txt = ' '.join(_txt.split())
+        doc = Document(page_content=_txt)
+        text_splitter = RecursiveTokenTextSplitter(
+            chunk_size = 500, chunk_overlap = 20
+        )
+        _splitted = text_splitter.split_documents([doc])
+        _splitted = [split.page_content for split in _splitted]
+        embeddings = multithreading(get_embeddings, _splitted)
+        sim_score = [calculate_similarity(self.question_embedding, _embeddings) for _embeddings in embeddings]
+        top_3_indices = sorted(range(len(sim_score)), key=lambda i: sim_score[i], reverse=True)[:3]
+        results = [_splitted[i] for i in top_3_indices]
+        return results

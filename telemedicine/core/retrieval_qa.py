@@ -4,6 +4,7 @@ from langchain_core.callbacks import CallbackManagerForChainRun
 from langchain.chains.retrieval_qa.base import RetrievalQA
 
 from telemedicine.core.base import openai_chat
+from telemedicine.core.g_search import GoogleSearchTool
 from telemedicine.core.prompt_template import standalone_question_from_history
 
 
@@ -29,16 +30,20 @@ class CustomRetrievalQA:
         self.model = "llama3-8b-8192"
 
     def __call__(self, question, history=None):
-        if history:
-            standalone_question = self.question_from_history(question, history)
-        _run_manager = CallbackManagerForChainRun.get_noop_manager()
-        docs = self.qa._get_docs(question, run_manager=_run_manager)
-        if history:
-            docs += self.qa._get_docs(standalone_question, run_manager=_run_manager)
-        clean_docs = [doc.page_content for doc in docs]
+        if self.retriever is None:
+            clean_docs = GoogleSearchTool(question).result()
+        else:
+            if history:
+                standalone_question = self.question_from_history(question, history)
+            _run_manager = CallbackManagerForChainRun.get_noop_manager()
+            docs = self.qa._get_docs(question, run_manager=_run_manager)
+            if history:
+                docs += self.qa._get_docs(standalone_question, run_manager=_run_manager)
+            clean_docs = [doc.page_content for doc in docs]        
+            if history:
+                question = self.combine_questions(question, standalone_question)
+
         final_prompt = self.prompt.template.replace("{context}", "\n".join(clean_docs))
-        if history:
-            question = self.combine_questions(question, standalone_question)
         final_prompt = final_prompt.replace("{question}", question)
         response = openai_chat(
             question=final_prompt,
