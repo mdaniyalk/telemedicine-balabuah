@@ -56,6 +56,8 @@ class GoogleSearchTool:
             soup = BeautifulSoup(html_doc.text, 'html.parser')
             _txt = soup.get_text()
             _txt = ' '.join(_txt.split())
+            if "cloudfront" in _txt.lower() or "error" in _txt.lower():
+                return None
             doc = Document(page_content=_txt)
             text_splitter = RecursiveTokenTextSplitter(
                 chunk_size = 1000, chunk_overlap = 10
