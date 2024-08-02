@@ -85,7 +85,9 @@ def groq_wrapper():
     """
     import random
     load_dotenv(".env")
-    i = random.randint(0, 5)
+    a = random.randint(1, 100)
+    b = random.randint(1, 100)
+    i = random.randint(a, a*b) % 5
     api_key = os.getenv(f'GROQ_API_KEY_{i}')
     client = OpenAI(
         api_key=api_key, 
