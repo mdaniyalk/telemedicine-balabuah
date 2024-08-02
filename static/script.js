@@ -5,7 +5,7 @@ $(document).ready(function() {
     const hour = date.getHours();
     const minute = date.getMinutes();
     const str_time = hour + ":" + minute;
-    const botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://www.pupukkaltim.com/public/assets/files/img/logo-small.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + initialMessage + '<span class="msg_time">' + str_time + '</span></div></div>';
+    const botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="static/telemedicine-kkn-icon.webp" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + initialMessage + '<span class="msg_time">' + str_time + '</span></div></div>';
     $("#messageFormeight").append($.parseHTML(botHtml));
 });
 
@@ -58,7 +58,7 @@ $(document).ready(function() {
         $("#messageFormeight").append(userHtml);
 
         var botHtml =
-            '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://www.pupukkaltim.com/public/assets/files/img/logo-small.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
+            '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="static/telemedicine-kkn-icon.webp" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
             'Loading<span class="loading-dots"></span>' +
             '<span class="msg_time">' +
             str_time +

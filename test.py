@@ -1,6 +1,6 @@
 from telemedicine.core.g_search import google_search
 
 
-question = "anak saya demam, apa yang harus saya lakukan?"
+question = "bagaimana cuaca hari ini"
     
 print(google_search(question))

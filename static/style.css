@@ -153,7 +153,8 @@ border-radius: 0 0 15px 15px !important;
 .msg_cotainer{
 	margin-top: auto;
 	margin-bottom: auto;
-	margin-left: 10px;
+	margin-left: 12px;
+	margin-right: 24px;
 	border-radius: 25px;
 	background-color: white;
 	padding: 10px;

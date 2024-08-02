@@ -92,7 +92,9 @@ class ChatSession:
         self.session_id = ''.join(random.choices(alphanumeric, k=16))
         self.chat_session = Chat()
         self.session_object = SessionObject(session_id=self.session_id, session_data=[])
-
+        updated_session_data = self.serialize_chat()
+        self.session_object.session_data = updated_session_data
+        self.save_session()
 
     def serialize_chat(self):
         serialized_history = [] 
@@ -105,7 +107,8 @@ class ChatSession:
         for history_dict in self.session_object.session_data:
             history.append(Message.load_from_dict(history_dict))
         chat = Chat()
-        chat.history = history
+        if len(history) > 0:
+            chat.history = history
         return chat
     
 
@@ -121,7 +124,7 @@ class ChatSession:
             str: The response to the message.
         """
 
-        response = self.chat_session.get_response(msg)
+        response = self.chat_session(msg)
         updated_session_data = self.serialize_chat()
         self.session_object.session_data = updated_session_data
         self.save_session()

@@ -22,6 +22,9 @@ def start_session():
 @app.route("/chat", methods=["GET", "POST"])
 def chat():
     # try:
+        import time
+
+        start_time = time.time()  # Start timing the process
         msg = request.form.get("msg")
         session_id = request.form.get("session_id")
         response_type = request.form.get("response_type", "html")
@@ -34,10 +37,14 @@ def chat():
         if response_type == "html":
             response = session.get_response(msg)
             session.save_session()
+            elapsed_time = time.time() - start_time  # Calculate elapsed time
+            print(f"Processing time: {elapsed_time:.2f} seconds")  # Log the processing time
             return response
         elif response_type == "json":
             response = session.get_response(msg, html=False)
             session.save_session()
+            elapsed_time = time.time() - start_time  # Calculate elapsed time
+            print(f"Processing time: {elapsed_time:.2f} seconds")  # Log the processing time
             return jsonify(response=response)
     # except Exception as e:
     #     print(e)

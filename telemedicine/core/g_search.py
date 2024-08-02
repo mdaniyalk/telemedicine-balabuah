@@ -39,26 +39,34 @@ class GoogleSearchTool:
         self.question_embedding = get_embeddings(question)
     
     def result(self):
-        results = self.search.results(self.question, num_results=self.num_results)
-        _doc_result = multithreading(self._process_result, results)
+        results = self.search.results(self.question, num_results=5*self.num_results)
+        for res in results:
+            _doc_result = self._process_result(res)
+            if _doc_result is not None:
+                break
         doc_result = []
         for doc in _doc_result:
-            doc_result.extend(doc)
+            doc_result.append(doc)
+        print('doc_result:', doc_result)
         return doc_result
 
     def _process_result(self, result):
-        html_doc = requests.get(result['link'])
-        soup = BeautifulSoup(html_doc.text, 'html.parser')
-        _txt = soup.get_text()
-        _txt = ' '.join(_txt.split())
-        doc = Document(page_content=_txt)
-        text_splitter = RecursiveTokenTextSplitter(
-            chunk_size = 500, chunk_overlap = 20
-        )
-        _splitted = text_splitter.split_documents([doc])
-        _splitted = [split.page_content for split in _splitted]
-        embeddings = multithreading(get_embeddings, _splitted)
-        sim_score = [calculate_similarity(self.question_embedding, _embeddings) for _embeddings in embeddings]
-        top_3_indices = sorted(range(len(sim_score)), key=lambda i: sim_score[i], reverse=True)[:3]
-        results = [_splitted[i] for i in top_3_indices]
-        return results
+        try:
+            html_doc = requests.get(result['link'])
+            soup = BeautifulSoup(html_doc.text, 'html.parser')
+            _txt = soup.get_text()
+            _txt = ' '.join(_txt.split())
+            doc = Document(page_content=_txt)
+            text_splitter = RecursiveTokenTextSplitter(
+                chunk_size = 1000, chunk_overlap = 10
+            )
+            _splitted = text_splitter.split_documents([doc])
+            _splitted = [split.page_content for split in _splitted]
+            results = _splitted[0:1]
+            # embeddings = multithreading(get_embeddings, _splitted)
+            # sim_score = [calculate_similarity(self.question_embedding, _embeddings) for _embeddings in embeddings]
+            # top_3_indices = sorted(range(len(sim_score)), key=lambda i: sim_score[i], reverse=True)[:3]
+            # results = [_splitted[i] for i in top_3_indices]
+            return results
+        except:
+            return None

@@ -19,9 +19,10 @@ class CustomRetrievalQA:
             self.kwargs['chain_type'] = 'stuff'
         if 'chain_type_kwargs' not in self.kwargs:
             self.kwargs['chain_type_kwargs'] = {"prompt": self.prompt}
-        self.qa = RetrievalQA.from_chain_type(
-                llm=self.llm, retriever=self.retriever, **self.kwargs
-            )
+        if self.retriever is not None:
+            self.qa = RetrievalQA.from_chain_type(
+                    llm=self.llm, retriever=self.retriever, **self.kwargs
+                )
         try:
             load_dotenv('.env')
             self.api_key = os.getenv('OPENAI_API_KEY')
@@ -30,19 +31,20 @@ class CustomRetrievalQA:
         self.model = "llama3-8b-8192"
 
     def __call__(self, question, history=None):
+        if history:
+            standalone_question = self.question_from_history(question, history)
+
         if self.retriever is None:
             clean_docs = GoogleSearchTool(question).result()
         else:
-            if history:
-                standalone_question = self.question_from_history(question, history)
             _run_manager = CallbackManagerForChainRun.get_noop_manager()
             docs = self.qa._get_docs(question, run_manager=_run_manager)
             if history:
                 docs += self.qa._get_docs(standalone_question, run_manager=_run_manager)
-            clean_docs = [doc.page_content for doc in docs]        
-            if history:
-                question = self.combine_questions(question, standalone_question)
+            clean_docs = [doc.page_content for doc in docs]   
 
+        if history:
+            question = self.combine_questions(question, standalone_question)
         final_prompt = self.prompt.template.replace("{context}", "\n".join(clean_docs))
         final_prompt = final_prompt.replace("{question}", question)
         response = openai_chat(
@@ -50,7 +52,7 @@ class CustomRetrievalQA:
             system_message=self.system_prompt, 
             model=self.model, 
             max_tokens=4096, 
-            temperature=0.1
+            temperature=1
         )
         return response
     

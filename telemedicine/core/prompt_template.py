@@ -18,7 +18,6 @@ def retrieval_qa_prompt():
     """
     prompt_template = """
     Given the context below, answer the question at the end. 
-    If you don't know the answer, just say that you don't know, don't try to make up an answer.
     
     Context:
     {context}
@@ -27,18 +26,9 @@ def retrieval_qa_prompt():
     
     
     You need to make sure that your answers are relevant and accurate. 
-    If the answers is a procedure or instruction, you should make the answers as clear as possible, 
-    with the correct order. Make sure that you didn't combine combine multiple procedures from 
-    different tools or tool parts, as many tools have similar types of procedures.
-    Make sure you didn't add any information that is not in the context.
-    Please make sure that the answers is correct, since my boss will fire me if you mess up.
-    If the context provided didn't help you to answer the question, 
-    you can ask for more information or just say that you don't know the answer.
     If the question is just a statement or a greeting, you can answer that 
     question according to your knowledge without using the context.
     If there is a table, please response in markdown table or using bullet points or anything that are readable.
-    At the end, you need to also give references and suggest user to check to this list of documents:
-    {doc_references}
 
     Answer in Bahasa Indonesia using beautiful markdown format:"""
 

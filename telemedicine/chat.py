@@ -128,7 +128,7 @@ class Chat:
         return response
     
 
-    def get_answers(self, question: str, question_embedding: List[float]) -> str:
+    def get_answers(self, question: str) -> str:
         """
         Retrieval agent to retrieve the final answers from the documents for the given question.
 
@@ -140,10 +140,13 @@ class Chat:
             str: The final answers from the documents.
         """
 
-        history = self.prepare_history(question_embedding)
+        history = self.get_n_last_message_pair(2)
         response_text = Retrieval.retrieve(
             question=question, 
             history=history
         )
         response_text = translate(response_text, "auto", "id")
         return response_text
+    
+    def __call__(self, question: str) -> str:
+        return self.get_response(question)

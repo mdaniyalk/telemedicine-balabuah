@@ -28,7 +28,7 @@ class Retrieval(BaseRetrievers):
     Class to retrieve information from documents using a retrieval QA system.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         self.prompt = retrieval_qa_prompt()
         self.llm = ChatOpenAI(
             model_name='llama3-8b-8192',
