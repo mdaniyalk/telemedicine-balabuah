@@ -15,19 +15,29 @@ $(document).ready(function() {
 
     // Function to start session and get session ID
     function startSession() {
+        $("#text").prop("disabled", true); // Disable input field
+        $("#text").prop("required", false); // Disable input field
+        $("#send").prop("disabled", true); // Disable send button
+        $("#text").attr("placeholder", "Mohon menunggu!"); // Set placeholder text
+
         $.ajax({
             type: "GET",
             url: "/start-session",
             success: function(response) {
                 sessionId = response.sessionId;
+                console.log(sessionId);
+                $("#text").prop("disabled", false); // Enable input field
+                $("#send").prop("disabled", false); // Enable send button
+                $("#text").prop("required", true); // Disable input field
+                $("#text").attr("placeholder", "Ketikkan pesan anda..."); // Set placeholder text
             },
             error: function(xhr, status, error) {
                 console.error("Error starting session:", error);
+                $("#text").attr("placeholder", "Terjadi error, silahkan reload halaman ini!"); // Set placeholder text
             }
         });
     }
 
-    console.log(sessionId);
 
     // Call startSession function when the document is ready
     startSession();

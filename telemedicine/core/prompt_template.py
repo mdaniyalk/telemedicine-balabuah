@@ -26,8 +26,7 @@ def retrieval_qa_prompt():
     
     
     You need to make sure that your answers are relevant and accurate. 
-    If the question is just a statement or a greeting, you can answer that 
-    question according to your knowledge without using the context.
+    If the question is just a statement or a greeting, you can ignore the context to just answer that.
     If there is a table, please response in markdown table or using bullet points or anything that are readable.
 
     Answer in Bahasa Indonesia using beautiful markdown format:"""
