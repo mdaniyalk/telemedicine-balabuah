@@ -83,10 +83,25 @@ def get_daily_stats():
                     'date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': "$timestamp" } },
                     'model_name': "$model_name"
                 },
-                'total_tokens': { '$sum': "$total_tokens" }
+                'total_tokens': { '$sum': "$total_tokens" },
+                'unique_sessions': { '$addToSet': "$session_id" }
             }
         },
-        { '$sort': { '_id.date': 1 } }
+        {
+            '$group': {
+                '_id': '$_id.date',
+                'models': {
+                    '$push': {
+                        'model_name': '$_id.model_name',
+                        'total_tokens': '$total_tokens',
+                        'unique_sessions_count': { '$size': '$unique_sessions' }
+                    }
+                },
+                'total_daily_tokens': { '$sum': '$total_tokens' },
+                'total_unique_sessions': { '$sum': { '$size': '$unique_sessions' } }
+            }
+        },
+        { '$sort': { '_id': 1 } }
     ]
     data = list(collection.aggregate(pipeline))
     return jsonify(data)
@@ -111,7 +126,8 @@ def get_weekly_stats():
                     'year': { '$isoWeekYear': "$timestamp" },
                     'model_name': "$model_name"
                 },
-                'total_tokens': { '$sum': "$total_tokens" }
+                'total_tokens': { '$sum': "$total_tokens" },
+                'unique_sessions': { '$addToSet': "$session_id" }
             }
         },
         { '$sort': { '_id.year': 1, '_id.week': 1 } }
@@ -138,13 +154,15 @@ def get_monthly_stats():
                     'month': { '$month': "$timestamp" },
                     'year': { '$year': "$timestamp" }
                 },
-                'total_tokens': { '$sum': "$total_tokens" }
+                'total_tokens': { '$sum': "$total_tokens" },
+                'unique_sessions': { '$addToSet': "$session_id" }
             }
         },
         { '$sort': { '_id.year': 1, '_id.month': 1 } }
     ]
     data = list(collection.aggregate(pipeline))
     return jsonify(data)
+
 
 
 

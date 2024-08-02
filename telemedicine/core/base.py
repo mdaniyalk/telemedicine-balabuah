@@ -55,6 +55,7 @@ def openai_chat(question,
         client = OpenAI(
             api_key=openai_api_key
         )
+        model_id = f"{model}"
     
     messages = [{"role": "system", "content": system_message}]
     if history is not None:

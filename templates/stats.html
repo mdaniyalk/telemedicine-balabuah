@@ -6,7 +6,6 @@
     <title>Statistics Dashboard</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='telemedicine-kkn-icon.webp')}}">
 </head>
 <body>
     <div class="container mt-5">
@@ -19,6 +18,10 @@
             </div>
             <div class="card-body">
                 <canvas id="dailyChart"></canvas>
+                <h5>Total Daily Tokens: <span id="totalDailyTokens">0</span></h5>
+                <h5>Total Daily Cost: $<span id="totalDailyCost">0.00</span></h5>
+                <h5>Price Per Model: <span id="pricePerModel">0.00</span></h5>
+                <h5>Total Unique Sessions: <span id="totalDailySessions">0</span></h5>
             </div>
         </div>
         
@@ -29,6 +32,7 @@
             </div>
             <div class="card-body">
                 <canvas id="weeklyChart"></canvas>
+                <h5>Total Weekly Sessions: <span id="totalWeeklySessions">0</span></h5>
             </div>
         </div>
         
@@ -39,12 +43,23 @@
             </div>
             <div class="card-body">
                 <canvas id="monthlyChart"></canvas>
+                <h5>Total Monthly Sessions: <span id="totalMonthlySessions">0</span></h5>
             </div>
         </div>
         
     </div>
 
     <script>
+        // Define model prices
+        const modelPrice = {
+            "gpt-4o-mini-2024-07-18": 6e-7,
+            "llama3-8b-8192-0": 8e-8,
+            "llama3-8b-8192-1": 8e-8,
+            "llama3-8b-8192-2": 8e-8,
+            "llama3-8b-8192-3": 8e-8,
+            "llama3-8b-8192-4": 8e-8
+        };
+
         async function fetchData(url) {
             const response = await fetch(url);
             return response.json();
@@ -69,19 +84,52 @@
             const monthlyResponse = await fetchData('/api/stats/monthly');
 
             // Process data for Daily Chart
-            const dailyLabels = [...new Set(dailyResponse.map(d => d._id.date))];
-            const dailyDatasets = [...new Set(dailyResponse.map(d => d._id.model_name))].map(modelName => {
+            const dailyLabels = dailyResponse.map(d => d._id);
+            const dailyDatasets = [...new Set(dailyResponse.flatMap(d => d.models.map(m => m.model_name)))].map(modelName => {
                 return {
                     label: modelName,
                     data: dailyLabels.map(date => {
-                        const record = dailyResponse.find(d => d._id.date === date && d._id.model_name === modelName);
-                        return record ? record.total_tokens : 0;
+                        const record = dailyResponse.find(d => d._id === date);
+                        const modelData = record ? record.models.find(m => m.model_name === modelName) : { total_tokens: 0 };
+                        return modelData.total_tokens;
                     }),
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1
                 };
             });
+
+            // Calculate total daily tokens, cost, and unique sessions
+            // Calculate total daily tokens, cost, and price per model
+            let totalDailyTokens = 0;
+            let totalDailyCost = 0;
+            let totalDailySessions = 0;
+            const pricePerModel = {};
+
+            dailyResponse.forEach(record => {
+                totalDailyTokens += record.total_daily_tokens;
+                totalDailySessions += record.total_unique_sessions;
+                record.models.forEach(model => {
+                    const pricePerToken = modelPrice[model.model_name] || 0;
+                    totalDailyCost += model.total_tokens * pricePerToken;
+
+                    // Store price per model
+                    if (!pricePerModel[model.model_name]) {
+                        pricePerModel[model.model_name] = model.total_tokens * pricePerToken;
+                    }
+                });
+            });
+
+            console.log(totalDailyCost);
+            document.getElementById('totalDailyTokens').textContent = totalDailyTokens;
+            document.getElementById('totalDailyCost').textContent = totalDailyCost.toFixed(8);
+            document.getElementById('totalDailySessions').textContent = totalDailySessions;
+
+            // Display price per model in HTML
+            const priceModelContainer = document.getElementById('pricePerModel');
+            priceModelContainer.innerHTML = Object.entries(pricePerModel)
+                .map(([modelName, price]) => `<h5>${modelName}: $${price.toFixed(8)}</h5>`)
+                .join('');
 
             // Process data for Weekly Chart
             const weeklyLabels = [...new Set(weeklyResponse.map(d => `${d._id.year}-W${d._id.week}`))];
@@ -98,6 +146,10 @@
                 };
             });
 
+            // Calculate total weekly sessions
+            const totalWeeklySessions = weeklyResponse.reduce((acc, record) => acc + record.total_unique_sessions, 0);
+            document.getElementById('totalWeeklySessions').textContent = totalWeeklySessions;
+
             // Process data for Monthly Chart
             const monthlyLabels = monthlyResponse.map(d => `${d._id.year}-${d._id.month}`);
             const monthlyData = {
@@ -113,6 +165,10 @@
                     borderWidth: 1
                 }]
             };
+
+            // Calculate total monthly sessions
+            const totalMonthlySessions = monthlyResponse.reduce((acc, record) => acc + record.total_unique_sessions, 0);
+            document.getElementById('totalMonthlySessions').textContent = totalMonthlySessions;
 
             // Create charts
             createChart(document.getElementById('dailyChart').getContext('2d'), 'bar', {

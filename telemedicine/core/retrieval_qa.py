@@ -34,8 +34,11 @@ class CustomRetrievalQA:
     def __call__(self, question, history=None, return_usage=True):
         if history:
             standalone_question = self.question_from_history(question, history)
+            print(f"Standalone question: {standalone_question}")
 
         if self.retriever is None:
+            if history:
+                clean_docs = GoogleSearchTool(standalone_question).result()
             clean_docs = GoogleSearchTool(question).result()
         else:
             _run_manager = CallbackManagerForChainRun.get_noop_manager()
@@ -53,7 +56,7 @@ class CustomRetrievalQA:
             system_message=self.system_prompt, 
             model=self.model, 
             max_tokens=4096, 
-            temperature=1,
+            temperature=0.25,
             return_usage=True
         )
         self.token_usage.append(token_usage)
@@ -70,7 +73,7 @@ class CustomRetrievalQA:
         prompt = standalone_question_from_history(question, history)
         response, token_usage = openai_chat(
             question=prompt,
-            model=self.model, 
+            model="gpt-4o-mini-2024-07-18", 
             max_tokens=4096, 
             temperature=0.5,
             return_usage=True   
