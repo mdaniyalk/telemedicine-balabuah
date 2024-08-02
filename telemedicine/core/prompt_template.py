@@ -18,6 +18,7 @@ def retrieval_qa_prompt():
     """
     prompt_template = """
     Given the context below, answer the question at the end. 
+    If the question is just a statement or a greeting (like hi, hai, hello, halo, etc.), you can ignore the context to just answer that.
     
     Context:
     {context}
@@ -26,7 +27,6 @@ def retrieval_qa_prompt():
     
     
     You need to make sure that your answers are relevant and accurate. 
-    If the question is just a statement or a greeting, you can ignore the context to just answer that.
     If there is a table, please response in markdown table or using bullet points or anything that are readable.
 
     Answer in Bahasa Indonesia using beautiful markdown format:"""
