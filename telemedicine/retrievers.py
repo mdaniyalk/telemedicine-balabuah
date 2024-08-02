@@ -67,50 +67,22 @@ class Retrieval(BaseRetrievers):
             return response
 
 
-    # def prepare_retrivers(self, 
-    #                       question: str,
-    #                       **kwargs: Any) -> None:
-    #     """
-    #     Prepare the retrievers for the retrieval process.
+    def prepare_retrivers(self, 
+                          question: str,
+                          **kwargs: Any) -> None:
+        """
+        Prepare the retrievers for the retrieval process.
 
-    #     Args:
-    #         db_folder_paths (List[str]): List of folder paths for vector databases.
-    #         vectordbs (List[VectorDB]): List of VectorDB objects.
-    #     """
+        Args:
+            db_folder_paths (List[str]): List of folder paths for vector databases.
+            vectordbs (List[VectorDB]): List of VectorDB objects.
+        """
 
-    #     vectordb = VectorDB(embedding_model="text-embedding-3-small",
-    #                         openai_api_key=os.getenv('OPENAI_API_KEY'))
-    #     vectordb.load_local()
-    #     len_k = 3
-    #     llm = ChatOpenAI(
-    #         model_name='llama3-8b-8192',
-    #         max_tokens=2048,  
-    #         openai_api_key=os.getenv('GROQ_API_KEY'), 
-    #         openai_api_base="https://api.groq.com/openai/v1",
-    #         temperature=0.1
-    #     )
-    #     multi_query_prompt = multi_query_retriver_prompt()
-    #     multi_query_retriver = MultiQueryRetriever.from_llm(
-    #         retriever=vectordb.as_retriever(search_type="mmr", 
-    #                                         search_kwargs={
-    #                                             'k': len_k, 
-    #                                             'fetch_k': 5*len_k,
-    #                                         }), 
-    #         llm=llm,
-    #         prompt=multi_query_prompt
-    #     )
-
-    #     faiss_retriever = vectordb.as_retriever(search_type="mmr", 
-    #                                             search_kwargs={
-    #                                                 'k': len_k, 
-    #                                                 'fetch_k': 5*len_k,
-    #                                             })
-    #     retrievers += [multi_query_retriver, faiss_retriever]
-    #     reference_document_title.extend(vectordb.title)
-    #     retrievers_weights = [1/(len(retrievers)) for _ in range(len(retrievers))]
-    #     ensemble_retriever = CustomEnsembleRetriever(
-    #         retrievers=retrievers, weights=retrievers_weights
-    #     )
-    #     self.ensemble_retriever = ensemble_retriever
-    #     self.reference_document_title = reference_document_title
+        vectordb = VectorDB(embedding_model="text-embedding-3-small",
+                            openai_api_key=os.getenv('OPENAI_API_KEY'))
+        vectordb.load_local()
+        len_k = 5
+        default_retriever = vectordb.as_retriever(
+            search_type="mmr", search_kwargs={'k': len_k, 'fetch_k': 5*len_k })
+        self.ensemble_retriever = default_retriever
 

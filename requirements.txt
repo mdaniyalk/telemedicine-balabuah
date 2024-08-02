@@ -28,3 +28,4 @@ Flask-PyMongo==2.3.0
 certifi==2024.2.2
 google-api-python-client==2.137.0
 fastembed==0.3.4
+fake_useragent-1.5.1

@@ -36,17 +36,19 @@ class CustomRetrievalQA:
             standalone_question = self.question_from_history(question, history)
             print(f"Standalone question: {standalone_question}")
 
-        if self.retriever is None:
-            if history:
-                clean_docs = GoogleSearchTool(standalone_question).result()
-            clean_docs = GoogleSearchTool(question).result()
+        clean_docs = []
+        if history:
+            clean_docs += GoogleSearchTool(standalone_question).result()
         else:
+            clean_docs += GoogleSearchTool(question).result()
+        if self.retriever is not None:
             _run_manager = CallbackManagerForChainRun.get_noop_manager()
-            docs = self.qa._get_docs(question, run_manager=_run_manager)
             if history:
-                docs += self.qa._get_docs(standalone_question, run_manager=_run_manager)
-            clean_docs = [doc.page_content for doc in docs]   
-
+                docs = self.qa._get_docs(standalone_question, run_manager=_run_manager)
+            else:
+                docs = self.qa._get_docs(question, run_manager=_run_manager)
+            _clean_docs = [doc.page_content for doc in docs]   
+            clean_docs += _clean_docs
         if history:
             question = self.combine_questions(question, standalone_question)
         final_prompt = self.prompt.template.replace("{context}", "\n".join(clean_docs))

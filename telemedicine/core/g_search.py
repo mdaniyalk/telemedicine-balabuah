@@ -60,15 +60,15 @@ class GoogleSearchTool:
                 return None
             doc = Document(page_content=_txt)
             text_splitter = RecursiveTokenTextSplitter(
-                chunk_size = 400, chunk_overlap = 10
+                chunk_size = 750, chunk_overlap = 10
             )
             _splitted = text_splitter.split_documents([doc])
             _splitted = [split.page_content for split in _splitted]
-            # results = _splitted[0:1]
-            embeddings = multithreading(get_embeddings, _splitted)
-            sim_score = [calculate_similarity(self.question_embedding, _embeddings) for _embeddings in embeddings]
-            top_3_indices = sorted(range(len(sim_score)), key=lambda i: sim_score[i], reverse=True)[:3]
-            results = [_splitted[i] for i in top_3_indices]
+            results = _splitted[0:1]
+            # embeddings = multithreading(get_embeddings, _splitted)
+            # sim_score = [calculate_similarity(self.question_embedding, _embeddings) for _embeddings in embeddings]
+            # top_3_indices = sorted(range(len(sim_score)), key=lambda i: sim_score[i], reverse=True)[:3]
+            # results = [_splitted[i] for i in top_3_indices]
             return results
         except:
             return None

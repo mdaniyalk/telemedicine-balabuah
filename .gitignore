@@ -11,6 +11,7 @@ backup-config.toml
 test-vectorstore
 file_map2.json
 example-folder-structure2.json
+scraped_text_files/
 
 .ruff_cache
 .vscode

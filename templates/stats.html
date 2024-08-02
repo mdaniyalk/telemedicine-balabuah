@@ -10,12 +10,10 @@
 <body>
     <div class="container mt-5">
         <h1 class="mb-4">Statistics Dashboard</h1>
-        
+
         <!-- Daily Statistics -->
         <div class="card mb-4">
-            <div class="card-header">
-                Daily Statistics (By Model)
-            </div>
+            <div class="card-header">Daily Statistics (By Model)</div>
             <div class="card-body">
                 <canvas id="dailyChart"></canvas>
                 <h5>Total Daily Tokens: <span id="totalDailyTokens">0</span></h5>
@@ -24,33 +22,27 @@
                 <h5>Total Unique Sessions: <span id="totalDailySessions">0</span></h5>
             </div>
         </div>
-        
+
         <!-- Weekly Statistics -->
         <div class="card mb-4">
-            <div class="card-header">
-                Weekly Statistics (By Model)
-            </div>
+            <div class="card-header">Weekly Statistics (By Model)</div>
             <div class="card-body">
                 <canvas id="weeklyChart"></canvas>
                 <h5>Total Weekly Sessions: <span id="totalWeeklySessions">0</span></h5>
             </div>
         </div>
-        
+
         <!-- Monthly Statistics -->
         <div class="card mb-4">
-            <div class="card-header">
-                Monthly Statistics
-            </div>
+            <div class="card-header">Monthly Statistics</div>
             <div class="card-body">
                 <canvas id="monthlyChart"></canvas>
                 <h5>Total Monthly Sessions: <span id="totalMonthlySessions">0</span></h5>
             </div>
         </div>
-        
     </div>
 
     <script>
-        // Define model prices
         const modelPrice = {
             "gpt-4o-mini-2024-07-18": 6e-7,
             "llama3-8b-8192-0": 8e-8,
@@ -61,8 +53,18 @@
         };
 
         async function fetchData(url) {
-            const response = await fetch(url);
-            return response.json();
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                console.log(`Data from ${url}:`, data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return [];
+            }
         }
 
         function createChart(ctx, type, data) {
@@ -78,111 +80,122 @@
         }
 
         async function loadCharts() {
-            // Fetch data
-            const dailyResponse = await fetchData('/api/stats/daily');
-            const weeklyResponse = await fetchData('/api/stats/weekly');
-            const monthlyResponse = await fetchData('/api/stats/monthly');
+            try {
+                const [dailyResponse, weeklyResponse, monthlyResponse] = await Promise.all([
+                    fetchData('/api/stats/daily'),
+                    fetchData('/api/stats/weekly'),
+                    fetchData('/api/stats/monthly')
+                ]);
 
-            // Process data for Daily Chart
-            const dailyLabels = dailyResponse.map(d => d._id);
-            const dailyDatasets = [...new Set(dailyResponse.flatMap(d => d.models.map(m => m.model_name)))].map(modelName => {
-                return {
-                    label: modelName,
-                    data: dailyLabels.map(date => {
-                        const record = dailyResponse.find(d => d._id === date);
-                        const modelData = record ? record.models.find(m => m.model_name === modelName) : { total_tokens: 0 };
-                        return modelData.total_tokens;
-                    }),
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                };
-            });
-
-            // Calculate total daily tokens, cost, and unique sessions
-            // Calculate total daily tokens, cost, and price per model
-            let totalDailyTokens = 0;
-            let totalDailyCost = 0;
-            let totalDailySessions = 0;
-            const pricePerModel = {};
-
-            dailyResponse.forEach(record => {
-                totalDailyTokens += record.total_daily_tokens;
-                totalDailySessions += record.total_unique_sessions;
-                record.models.forEach(model => {
-                    const pricePerToken = modelPrice[model.model_name] || 0;
-                    totalDailyCost += model.total_tokens * pricePerToken;
-
-                    // Store price per model
-                    if (!pricePerModel[model.model_name]) {
-                        pricePerModel[model.model_name] = model.total_tokens * pricePerToken;
-                    }
+                // Process Daily Chart Data
+                const dailyLabels = dailyResponse.map(d => d._id);
+                console.log('Daily Labels:', dailyLabels);
+                const dailyDatasets = [...new Set(dailyResponse.flatMap(d => d.models.map(m => m.model_name)))].map(modelName => {
+                    return {
+                        label: modelName,
+                        data: dailyLabels.map(date => {
+                            const record = dailyResponse.find(d => d._id === date);
+                            const modelData = record ? record.models.find(m => m.model_name === modelName) : { total_tokens: 0 };
+                            console.log(`Daily Data for ${modelName} on ${date}:`, modelData);
+                            if (!modelData) {
+                                console.warn(`No data found for model: ${modelName} on date: ${date}`);
+                                return 0; // Return 0 tokens if no data is found
+                            }
+                            return modelData.total_tokens || 0;
+                        }),
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    };
                 });
-            });
 
-            console.log(totalDailyCost);
-            document.getElementById('totalDailyTokens').textContent = totalDailyTokens;
-            document.getElementById('totalDailyCost').textContent = totalDailyCost.toFixed(8);
-            document.getElementById('totalDailySessions').textContent = totalDailySessions;
+                // Calculate Daily Stats
+                let totalDailyTokens = 0;
+                let totalDailyCost = 0;
+                let totalDailySessions = 0;
+                const pricePerModel = {};
 
-            // Display price per model in HTML
-            const priceModelContainer = document.getElementById('pricePerModel');
-            priceModelContainer.innerHTML = Object.entries(pricePerModel)
-                .map(([modelName, price]) => `<h5>${modelName}: $${price.toFixed(8)}</h5>`)
-                .join('');
+                dailyResponse.forEach(record => {
+                    totalDailyTokens += record.total_daily_tokens || 0;
+                    totalDailySessions += record.total_unique_sessions || 0;
+                    record.models.forEach(model => {
+                        const pricePerToken = modelPrice[model.model_name] || 0;
+                        totalDailyCost += (model.total_tokens || 0) * pricePerToken;
 
-            // Process data for Weekly Chart
-            const weeklyLabels = [...new Set(weeklyResponse.map(d => `${d._id.year}-W${d._id.week}`))];
-            const weeklyDatasets = [...new Set(weeklyResponse.map(d => d._id.model_name))].map(modelName => {
-                return {
-                    label: modelName,
-                    data: weeklyLabels.map(week => {
-                        const record = weeklyResponse.find(d => `${d._id.year}-W${d._id.week}` === week && d._id.model_name === modelName);
-                        return record ? record.total_tokens : 0;
-                    }),
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
+                        if (!pricePerModel[model.model_name]) {
+                            pricePerModel[model.model_name] = (model.total_tokens || 0) * pricePerToken;
+                        }
+                    });
+                });
+
+                document.getElementById('totalDailyTokens').textContent = totalDailyTokens;
+                document.getElementById('totalDailyCost').textContent = totalDailyCost.toFixed(8);
+                document.getElementById('totalDailySessions').textContent = totalDailySessions;
+
+                const priceModelContainer = document.getElementById('pricePerModel');
+                priceModelContainer.innerHTML = Object.entries(pricePerModel)
+                    .map(([modelName, price]) => `<h5>${modelName}: $${price.toFixed(8)}</h5>`)
+                    .join('');
+
+                // Process Weekly Chart Data
+                const weeklyLabels = [...new Set(weeklyResponse.map(d => `${d._id.year}-W${d._id.week}`))];
+                console.log('Weekly Labels:', weeklyLabels);
+                const weeklyDatasets = [...new Set(weeklyResponse.map(d => d._id.model_name))].map(modelName => {
+                    return {
+                        label: modelName,
+                        data: weeklyLabels.map(week => {
+                            const record = weeklyResponse.find(d => `${d._id.year}-W${d._id.week}` === week && d._id.model_name === modelName);
+                            console.log(`Weekly Data for ${modelName} on ${week}:`, record);
+                            return record ? record.total_tokens : 0;
+                        }),
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    };
+                });
+
+                const totalWeeklySessions = weeklyResponse.reduce((acc, record) => acc + (record.unique_sessions ? record.unique_sessions.length : 0), 0);
+                document.getElementById('totalWeeklySessions').textContent = totalWeeklySessions;
+
+                // Process Monthly Chart Data
+                const monthlyLabels = monthlyResponse.map(d => `${d._id.year}-${d._id.month}`);
+                console.log('Monthly Labels:', monthlyLabels);
+                const monthlyData = {
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: 'Total Tokens',
+                        data: monthlyLabels.map(label => {
+                            const record = monthlyResponse.find(d => `${d._id.year}-${d._id.month}` === label);
+                            console.log(`Monthly Data on ${label}:`, record);
+                            return record ? record.total_tokens : 0;
+                        }),
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }]
                 };
-            });
 
-            // Calculate total weekly sessions
-            const totalWeeklySessions = weeklyResponse.reduce((acc, record) => acc + record.total_unique_sessions, 0);
-            document.getElementById('totalWeeklySessions').textContent = totalWeeklySessions;
+                const totalMonthlySessions = monthlyResponse.reduce((acc, record) => acc + (record.unique_sessions ? record.unique_sessions.length : 0), 0);
+                document.getElementById('totalMonthlySessions').textContent = totalMonthlySessions;
 
-            // Process data for Monthly Chart
-            const monthlyLabels = monthlyResponse.map(d => `${d._id.year}-${d._id.month}`);
-            const monthlyData = {
-                labels: monthlyLabels,
-                datasets: [{
-                    label: 'Total Tokens',
-                    data: monthlyLabels.map(label => {
-                        const record = monthlyResponse.find(d => `${d._id.year}-${d._id.month}` === label);
-                        return record ? record.total_tokens : 0;
-                    }),
-                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                    borderColor: 'rgba(255, 159, 64, 1)',
-                    borderWidth: 1
-                }]
-            };
+                // Create Charts
+                createChart(document.getElementById('dailyChart').getContext('2d'), 'bar', {
+                    labels: dailyLabels,
+                    datasets: dailyDatasets
+                });
 
-            // Calculate total monthly sessions
-            const totalMonthlySessions = monthlyResponse.reduce((acc, record) => acc + record.total_unique_sessions, 0);
-            document.getElementById('totalMonthlySessions').textContent = totalMonthlySessions;
+                createChart(document.getElementById('weeklyChart').getContext('2d'), 'bar', {
+                    labels: weeklyLabels,
+                    datasets: weeklyDatasets
+                });
 
-            // Create charts
-            createChart(document.getElementById('dailyChart').getContext('2d'), 'bar', {
-                labels: dailyLabels,
-                datasets: dailyDatasets
-            });
+                createChart(document.getElementById('monthlyChart').getContext('2d'), 'line', monthlyData);
 
-            createChart(document.getElementById('weeklyChart').getContext('2d'), 'bar', {
-                labels: weeklyLabels,
-                datasets: weeklyDatasets
-            });
-
-            createChart(document.getElementById('monthlyChart').getContext('2d'), 'line', monthlyData);
+            } catch (error) {
+                console.error('Error loading charts:', error);
+            }
         }
+
 
         loadCharts();
     </script>

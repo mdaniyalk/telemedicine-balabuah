@@ -48,25 +48,36 @@ def openai_chat(question,
         print("Please set the params system_message.")
         print('Using default system message of "You are a helpful assistant.".')
     
+    messages = [{"role": "system", "content": system_message}]
+    if history is not None:
+        messages.append({"role": "user", "content": f"Chat History: {history}"})
+    messages.append({"role": "user", "content": question})
     if model == "llama3-8b-8192":
-        client, model_id = groq_wrapper()
-        model_id = f"{model}-{model_id}"
+        not_complete = True
+        while not_complete:
+            try:
+                client, model_id = groq_wrapper()
+                model_id = f"{model}-{model_id}"
+                completion = client.chat.completions.create(
+                    model=model,
+                    seed=42,
+                    messages=messages,
+                    **kwargs
+                )
+                not_complete = False
+            except:
+                continue
     else:
         client = OpenAI(
             api_key=openai_api_key
         )
         model_id = f"{model}"
-    
-    messages = [{"role": "system", "content": system_message}]
-    if history is not None:
-        messages.append({"role": "user", "content": f"Chat History: {history}"})
-    messages.append({"role": "user", "content": question})
-    completion = client.chat.completions.create(
-        model=model,
-        seed=42,
-        messages=messages,
-        **kwargs
-    )
+        completion = client.chat.completions.create(
+            model=model,
+            seed=42,
+            messages=messages,
+            **kwargs
+        )
 
     response_content = completion.choices[0].message.content
     if return_usage:
@@ -90,6 +101,7 @@ def groq_wrapper():
     b = random.randint(1, 100)
     i = random.randint(a, a*b) % 5
     api_key = os.getenv(f'GROQ_API_KEY_{i}')
+    print(f"Using Groq API Key {i}")
     client = OpenAI(
         api_key=api_key, 
         base_url='https://api.groq.com/openai/v1',
