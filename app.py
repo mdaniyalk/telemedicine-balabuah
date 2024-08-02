@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 import markdown2 as markdown
+from dotenv import load_dotenv
+import os
+
+import certifi
+from pymongo import MongoClient
 
 from telemedicine.core.configuration import Configuration
 from telemedicine.core.paraphraser import paraphrase
@@ -54,6 +59,98 @@ def chat():
     #     elif response_type == "json":
     #         return jsonify(error=error_msg)
 
+mongo_uri = os.getenv('MONGO_URI')
+client = MongoClient(mongo_uri, tlsCAFile=certifi.where())
+collection_name = os.getenv('MONGO_COLLECTION_USAGE')
+collection = client["session_data"]["usage"]
+
+@app.route('/api/stats/daily', methods=['GET'])
+def get_daily_stats():
+    pipeline = [
+        {
+            '$addFields': {
+                'timestamp': {
+                    '$dateFromString': {
+                        'dateString': "$timestamp",
+                        'format': "%Y-%m-%d %H:%M:%S"
+                    }
+                }
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': "$timestamp" } },
+                    'model_name': "$model_name"
+                },
+                'total_tokens': { '$sum': "$total_tokens" }
+            }
+        },
+        { '$sort': { '_id.date': 1 } }
+    ]
+    data = list(collection.aggregate(pipeline))
+    return jsonify(data)
+
+@app.route('/api/stats/weekly', methods=['GET'])
+def get_weekly_stats():
+    pipeline = [
+        {
+            '$addFields': {
+                'timestamp': {
+                    '$dateFromString': {
+                        'dateString': "$timestamp",
+                        'format': "%Y-%m-%d %H:%M:%S"
+                    }
+                }
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'week': { '$isoWeek': "$timestamp" },
+                    'year': { '$isoWeekYear': "$timestamp" },
+                    'model_name': "$model_name"
+                },
+                'total_tokens': { '$sum': "$total_tokens" }
+            }
+        },
+        { '$sort': { '_id.year': 1, '_id.week': 1 } }
+    ]
+    data = list(collection.aggregate(pipeline))
+    return jsonify(data)
+
+@app.route('/api/stats/monthly', methods=['GET'])
+def get_monthly_stats():
+    pipeline = [
+        {
+            '$addFields': {
+                'timestamp': {
+                    '$dateFromString': {
+                        'dateString': "$timestamp",
+                        'format': "%Y-%m-%d %H:%M:%S"
+                    }
+                }
+            }
+        },
+        {
+            '$group': {
+                '_id': {
+                    'month': { '$month': "$timestamp" },
+                    'year': { '$year': "$timestamp" }
+                },
+                'total_tokens': { '$sum': "$total_tokens" }
+            }
+        },
+        { '$sort': { '_id.year': 1, '_id.month': 1 } }
+    ]
+    data = list(collection.aggregate(pipeline))
+    return jsonify(data)
+
+
+
+@app.route("/admin/open/usage/stats")
+def stats():
+    return render_template("stats.html")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='telemedicine-kkn-icon.webp')}}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Statistics Dashboard</h1>
+        
+        <!-- Daily Statistics -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Daily Statistics (By Model)
+            </div>
+            <div class="card-body">
+                <canvas id="dailyChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Weekly Statistics -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Weekly Statistics (By Model)
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Monthly Statistics -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Monthly Statistics
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        async function fetchData(url) {
+            const response = await fetch(url);
+            return response.json();
+        }
+
+        function createChart(ctx, type, data) {
+            new Chart(ctx, {
+                type: type,
+                data: data,
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        async function loadCharts() {
+            // Fetch data
+            const dailyResponse = await fetchData('/api/stats/daily');
+            const weeklyResponse = await fetchData('/api/stats/weekly');
+            const monthlyResponse = await fetchData('/api/stats/monthly');
+
+            // Process data for Daily Chart
+            const dailyLabels = [...new Set(dailyResponse.map(d => d._id.date))];
+            const dailyDatasets = [...new Set(dailyResponse.map(d => d._id.model_name))].map(modelName => {
+                return {
+                    label: modelName,
+                    data: dailyLabels.map(date => {
+                        const record = dailyResponse.find(d => d._id.date === date && d._id.model_name === modelName);
+                        return record ? record.total_tokens : 0;
+                    }),
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                };
+            });
+
+            // Process data for Weekly Chart
+            const weeklyLabels = [...new Set(weeklyResponse.map(d => `${d._id.year}-W${d._id.week}`))];
+            const weeklyDatasets = [...new Set(weeklyResponse.map(d => d._id.model_name))].map(modelName => {
+                return {
+                    label: modelName,
+                    data: weeklyLabels.map(week => {
+                        const record = weeklyResponse.find(d => `${d._id.year}-W${d._id.week}` === week && d._id.model_name === modelName);
+                        return record ? record.total_tokens : 0;
+                    }),
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                };
+            });
+
+            // Process data for Monthly Chart
+            const monthlyLabels = monthlyResponse.map(d => `${d._id.year}-${d._id.month}`);
+            const monthlyData = {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Total Tokens',
+                    data: monthlyLabels.map(label => {
+                        const record = monthlyResponse.find(d => `${d._id.year}-${d._id.month}` === label);
+                        return record ? record.total_tokens : 0;
+                    }),
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            // Create charts
+            createChart(document.getElementById('dailyChart').getContext('2d'), 'bar', {
+                labels: dailyLabels,
+                datasets: dailyDatasets
+            });
+
+            createChart(document.getElementById('weeklyChart').getContext('2d'), 'bar', {
+                labels: weeklyLabels,
+                datasets: weeklyDatasets
+            });
+
+            createChart(document.getElementById('monthlyChart').getContext('2d'), 'line', monthlyData);
+        }
+
+        loadCharts();
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
