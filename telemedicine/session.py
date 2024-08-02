@@ -124,7 +124,7 @@ class ChatSession:
             str: The response to the message.
         """
 
-        response = self.chat_session(msg)
+        response = self.chat_session(msg, self.session_id)
         updated_session_data = self.serialize_chat()
         self.session_object.session_data = updated_session_data
         self.save_session()

@@ -37,10 +37,12 @@ class Retrieval(BaseRetrievers):
             openai_api_base="https://api.groq.com/openai/v1",
             temperature=0.1
         )
+        self.token_usage = []
 
     def result(self, 
                question: str,
                history: str = None,
+               return_usage: bool = True,
                **kwargs: Any) -> str:
         """
         Retrieve the result for a given question.
@@ -57,8 +59,12 @@ class Retrieval(BaseRetrievers):
         qa = CustomRetrievalQA(llm=self.llm, 
                                retriever=self.ensemble_retriever, 
                                prompt=self.prompt)
-        response = qa(question, history=history)
-        return response
+        response, token_usage = qa(question, history=history, return_usage=return_usage)
+        self.token_usage.extend(token_usage)
+        if return_usage:
+            return response, self.token_usage
+        else:
+            return response
 
 
     # def prepare_retrivers(self, 

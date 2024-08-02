@@ -17,6 +17,7 @@ def openai_chat(question,
                 model: Optional[str] = None, 
                 api_key: Optional[str] = None, 
                 history: Optional[str] = None, 
+                return_usage: Optional[bool] = False,
                 **kwargs) -> str:
     """
     Function to interact with OpenAI chat API.
@@ -48,7 +49,8 @@ def openai_chat(question,
         print('Using default system message of "You are a helpful assistant.".')
     
     if model == "llama3-8b-8192":
-        client = groq_wrapper()
+        client, model_id = groq_wrapper()
+        model_id = f"{model}-{model_id}"
     else:
         client = OpenAI(
             api_key=openai_api_key
@@ -65,7 +67,17 @@ def openai_chat(question,
         **kwargs
     )
 
-    return completion.choices[0].message.content
+    response_content = completion.choices[0].message.content
+    if return_usage:
+        prompt_tokens = completion.usage.prompt_tokens
+        completion_tokens = completion.usage.completion_tokens
+        total_tokens = completion.usage.total_tokens
+        usage = Usage(
+            prompt_tokens = prompt_tokens, completion_tokens = completion_tokens, total_tokens = total_tokens, model_name = model_id
+        )
+        return response_content, usage
+    else:
+        return response_content
 
 def groq_wrapper():
     """
@@ -79,13 +91,15 @@ def groq_wrapper():
         api_key=api_key, 
         base_url='https://api.groq.com/openai/v1',
     )
-    return client
+    model_id = i
+    return client, model_id
 
 
 @retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))
 def openai_embedding(text, 
                      model: Optional[str] = None, 
                      api_key: Optional[str] = None,
+                     return_usage: Optional[bool] = False,
                      **kwargs) -> List[float]:
     """
     Function to interact with OpenAI embedding API.
@@ -118,7 +132,16 @@ def openai_embedding(text,
         **kwargs
     )
 
-    return embedding.data[0].embedding
+    response_content = embedding.data[0].embedding
+    if return_usage:
+        prompt_tokens = embedding.usage.prompt_tokens
+        total_tokens = embedding.usage.total_tokens
+        usage = Usage(
+            prompt_tokens = prompt_tokens, completion_tokens = 0, total_tokens = total_tokens, model_name = model
+        )
+        return response_content, usage
+    else:
+        return response_content
 
     
 def calculate_similarity(embedding1, embedding2, mode='sklearn'):
@@ -137,7 +160,28 @@ def calculate_similarity(embedding1, embedding2, mode='sklearn'):
     else:
         return 1 - cdist([embedding1], [embedding2], metric='cosine')
 
+@dataclass
+class Usage:
+    """
+    Base Usage Class.
+    """
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    model_name: str = None
 
+    def add(self, prompt_tokens=None, completion_tokens=None, total_tokens=None, usage_tokens=None):
+        if usage_tokens is None:
+            if prompt_tokens is None and completion_tokens is None and total_tokens is None:
+                raise ValueError("At least one of 'prompt_tokens', 'completion_tokens', 'total_tokens', or 'tokens' must be provided.")
+            else:
+                self.prompt_tokens += prompt_tokens
+                self.completion_tokens += completion_tokens
+                self.total_tokens += total_tokens
+        elif isinstance(usage_tokens, Usage):
+            self.prompt_tokens += usage_tokens.prompt_tokens
+            self.completion_tokens += usage_tokens.completion_tokens
+            self.total_tokens += usage_tokens.total_tokens
 
 @dataclass
 class Message:
@@ -211,7 +255,7 @@ class BaseRetrievers(ABC):
     """
     
     def __init__(self):
-        pass
+        self.token_usage = []
 
     @classmethod
     def retrieve(cls,

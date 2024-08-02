@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain_core.callbacks import CallbackManagerForChainRun
 from langchain.chains.retrieval_qa.base import RetrievalQA
 
-from telemedicine.core.base import openai_chat
+from telemedicine.core.base import Usage, openai_chat
 from telemedicine.core.g_search import GoogleSearchTool
 from telemedicine.core.prompt_template import standalone_question_from_history
 
@@ -29,8 +29,9 @@ class CustomRetrievalQA:
         except Exception as e:
             raise ValueError(f"Please set the openai_key in env file. Error: {str(e)}")
         self.model = "llama3-8b-8192"
+        self.token_usage = []
 
-    def __call__(self, question, history=None):
+    def __call__(self, question, history=None, return_usage=True):
         if history:
             standalone_question = self.question_from_history(question, history)
 
@@ -47,14 +48,19 @@ class CustomRetrievalQA:
             question = self.combine_questions(question, standalone_question)
         final_prompt = self.prompt.template.replace("{context}", "\n".join(clean_docs))
         final_prompt = final_prompt.replace("{question}", question)
-        response = openai_chat(
+        response, token_usage = openai_chat(
             question=final_prompt,
             system_message=self.system_prompt, 
             model=self.model, 
             max_tokens=4096, 
-            temperature=1
+            temperature=1,
+            return_usage=True
         )
-        return response
+        self.token_usage.append(token_usage)
+        if return_usage:
+            return response, self.token_usage
+        else:
+            return response
     
     def combine_questions(self, question1, question2):
         prompt = f"{question1}\nStandalone question based on history: {question2}"
@@ -62,10 +68,12 @@ class CustomRetrievalQA:
     
     def question_from_history(self, question, history):
         prompt = standalone_question_from_history(question, history)
-        response = openai_chat(
+        response, token_usage = openai_chat(
             question=prompt,
             model=self.model, 
             max_tokens=4096, 
-            temperature=0.5
+            temperature=0.5,
+            return_usage=True   
         )
+        self.token_usage.append(token_usage)
         return response
