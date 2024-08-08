@@ -37,10 +37,10 @@ class CustomRetrievalQA:
             print(f"Standalone question: {standalone_question}")
 
         clean_docs = []
-        if history:
-            clean_docs += GoogleSearchTool(standalone_question).result()
-        else:
-            clean_docs += GoogleSearchTool(question).result()
+        # if history:
+        #     clean_docs += GoogleSearchTool(standalone_question).result()
+        # else:
+        #     clean_docs += GoogleSearchTool(question).result()
         if self.retriever is not None:
             _run_manager = CallbackManagerForChainRun.get_noop_manager()
             if history:

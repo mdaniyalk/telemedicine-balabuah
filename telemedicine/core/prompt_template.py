@@ -73,3 +73,17 @@ def standalone_question_from_history(question, history):
     Standalone question:
     """
     return prompt
+
+def get_help_template():
+    prompt_list = [
+        "Jika anda memerlukan bantuan kesehatan lebih lanjut, silahkan hubungi `{name}` di Whatsapp [{number}]({number_link}).",
+        "Jika Anda membutuhkan dukungan kesehatan lebih lanjut, jangan ragu untuk menghubungi `{name}` di Whatsapp pada [{number}]({number_link}).",
+        "Hubungi `{name}` di Whatsapp di [{number}]({number_link}) jika Anda membutuhkan bantuan kesehatan lebih lanjut.",
+        "Untuk informasi kesehatan lebih lanjut, silakan menghubungi `{name}` di Whatsapp di [{number}]({number_link}).",
+        "Jika Anda memerlukan bantuan tambahan mengenai kesehatan, silakan hubungi `{name}` melalui Whatsapp di [{number}]({number_link}).",
+        "Untuk mendapatkan bantuan kesehatan lebih lanjut, hubungi `{name}` di Whatsapp di [{number}]({number_link}).",
+        "Untuk bantuan lebih lanjut mengenai kesehatan, silakan menghubungi `{name}` melalui Whatsapp di [{number}]({number_link}).",
+        "Bila Anda membutuhkan informasi lebih lengkap mengenai kesehatan atau memerlukan bantuan tambahan, silakan hubungi `{name}` melalui Whatsapp di [{number}]({number_link}). ",
+    ]
+
+    return random.choice(prompt_list)

@@ -190,10 +190,10 @@ if __name__ == "__main__":
     for query in queries:
         url = f'https://www.alodokter.com/search?s={query}&page='
         base_path = 'https://www.alodokter.com'
-        filename = 'scraped_text_files/alodokter'
+        filename = 'scraped_text_files/alodokter2'
         
 
-        for i in range(1,5):
+        for i in range(5,10):
             _url = f'{url}{i}'
             links = scrape_link(_url, base_path)
             for j, link in enumerate(tqdm(links, desc=f'Scraping Data From Links page {i}')):
@@ -209,4 +209,33 @@ if __name__ == "__main__":
                     else:
                         print(f'Error in url: {link}')
         
-    
+        
+    queries2 = ['alergi', 'infeksi', 'penyakit%20autoimun',
+           'kanker', 'arthritis', 'gastroenteritis',
+           'hipoglikemia', 'hiperkolesterolemia', 'obesitas',
+           'depresi', 'ansietas', 'gangguan%20makan',
+           'migrain', 'vertigo', 'tuli',
+           'peradangan', 'sepsis', 'penyakit%20paru',
+           'kecelakaan', 'trauma', 'patah%20tulang']
+
+    for query in queries2:
+        url = f'https://www.alodokter.com/search?s={query}&page='
+        base_path = 'https://www.alodokter.com'
+        filename = 'scraped_text_files/alodokter2'
+        
+
+        for i in range(1,10):
+            _url = f'{url}{i}'
+            links = scrape_link(_url, base_path)
+            for j, link in enumerate(tqdm(links, desc=f'Scraping Data From Links page {i}')):
+                with open(f'{filename}/{query}-{i}-content-{j}.txt', "a") as file:
+                    html_data = get_html_data(link)
+                    if html_data is not None:
+                        if 'komunitas/' in link:
+                            konten = parse_html_komunitas(html_data)
+                        else:
+                            konten = parse_html(html_data)
+                        
+                        file.write(f"{konten}\n\n")
+                    else:
+                        print(f'Error in url: {link}')

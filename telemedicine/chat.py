@@ -11,6 +11,7 @@ from telemedicine.core.base import (
     Message,
     calculate_similarity
 )
+from telemedicine.core.prompt_template import get_help_template
 from telemedicine.core.translate import translate
 from telemedicine.retrievers import Retrieval
 
@@ -154,6 +155,8 @@ class Chat:
             return_usage=True
         )
         response_text = translate(response_text, "auto", "id")
+        response_text += "\n\n---\n\n"
+        response_text += get_help_template()
         return response_text, token_usage
     
     def __call__(self, question: str, session_id) -> str:
