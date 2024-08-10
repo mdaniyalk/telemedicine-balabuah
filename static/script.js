@@ -4,7 +4,7 @@ $(document).ready(function() {
     const date = new Date();
     const hour = date.getHours();
     const minute = date.getMinutes();
-    const str_time = hour + ":" + minute;
+    const str_time = (hour < 10 ? "0" + hour : hour) + ":" + (minute < 10 ? "0" + minute : minute);
     const botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="static/telemedicine-kkn-icon.webp" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + initialMessage + '<span class="msg_time">' + str_time + '</span></div></div>';
     $("#messageFormeight").append($.parseHTML(botHtml));
 });
@@ -38,9 +38,27 @@ $(document).ready(function() {
         });
     }
 
-
     // Call startSession function when the document is ready
     startSession();
+
+    // Function to simulate typing animation
+    function typeMessage(element, message, interval) {
+        let index = 0;
+        const length = message.length;
+        const typingInterval = setInterval(function() {
+            if (index < length-10) {
+                const x = Math.floor(Math.random() * 10); // Random value for x
+                $(element).html(message.substring(0, index + x));
+                index += x;
+            } else if (index < length) {
+                const x = 1; // Random value for x
+                $(element).html(message.substring(0, index + x));
+                index += x;
+            } else {
+                clearInterval(typingInterval);
+            }
+        }, interval);
+    }
 
     $("#messageArea").on("submit", function(event) {
         event.preventDefault(); // Prevent default form submission
@@ -95,8 +113,11 @@ $(document).ready(function() {
             url: "/chat",
         }).done(function(data) {
             clearInterval(loadingInterval);
-            $appendedElement.find(".msg_cotainer").html(data + '<span class="msg_time">' + str_time);
+            $appendedElement.find(".msg_cotainer").html(''); // Clear loading message
             
+            // Start typing animation
+            typeMessage($appendedElement.find(".msg_cotainer"), data, 1);
+
             // Unlock the messageArea
             $("#text").prop("disabled", false); // Enable input field
             $("#send").prop("disabled", false); // Enable send button

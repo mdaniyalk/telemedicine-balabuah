@@ -1,6 +1,5 @@
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 
 <!DOCTYPE html>
@@ -8,8 +7,9 @@
 	<head>
 		<title>Telemedicine Balabuah | KKN-PPM UGM Kota Pariaman</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="icon" type="image/png" href="{{ url_for('static', filename='telemedicine-kkn-icon.webp')}}">
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo-balabuah-icon.webp')}}">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;400;700&display=swap" rel="stylesheet">
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
@@ -18,13 +18,37 @@
 	
 	
 	<body>
+		<div class="main-main">
+			<div class="main-bg"></div>
+		</div>
+		<nav class="navbar navbar-expand-lg">
+			<div class="container">
+				<a class="navbar-brand" href="index.html">
+					<img src="static/logo-balabuah-medium.webp" alt="Logo Balabuah" class="navbar-logo">
+					<img src="static/logo-ugm.webp" alt="Logo UGM" class="navbar-logo" style="margin-right: 1em;">
+					<!-- <div style="margin-right: 1em;"></div> -->
+					Telemedicine Balabuah
+				</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav align-items-lg-center ms-auto me-lg-5">
+						<li class="nav-item mt-4 mb-5">
+							<a href="https://www.instagram.com/balabuahkapiaman/" class="btn custom-btn d-lg-none ms-auto me-4">Home</a>
+						</li>
+					</ul>
+
+					<a href="https://www.instagram.com/balabuahkapiaman/" class="btn custom-btn d-lg-block d-none">Home</a>
+				</div>
+			</div>
+		</nav>
 		<div class="container-fluid h-100">
 			<div class="row justify-content-center h-100">        
-				<div class="col-md-10 col-lg-8 col-xl-6 chat">
-					<div class="center-image">
-						<img src="{{ url_for('static', filename='telemedicine-kkn.webp')}}" alt="Centered Image" class="centered-img">
-					</div>
-					<div class="card">
+				<div class="col-md-10 col-lg-6 chat">
+					
+					<div class="card mt-5">
 						<div class="card-header msg_head">
 							<div class="d-flex bd-highlight">
 								<div class="img_cont">
@@ -32,8 +56,8 @@
 									<span class="online_icon"></span>
 								</div>
 								<div class="user_info">
-									<span>Telemedicine Balabuah | KKN-PPM UGM Kota Pariaman</span>
-									<p>Asisten Kesehatan Virtual dari Balabuah!</p>
+									<span>Asisten Kesehatan Virtual dari Balabuah!</span>
+									<!-- <p>Asisten Kesehatan Virtual dari Balabuah!</p> -->
 								</div>
 							</div>
 						</div>
@@ -47,8 +71,21 @@
 							</form>
 						</div>
 					</div>
+					<!-- <div class="center-image mt-4">
+						<img src="{{ url_for('static', filename='telemedicine-kkn.webp')}}" alt="Centered Image" class="centered-img">
+					</div> -->
 				</div>
 			</div>
 		</div>
+		<div class="navbar navbar-expand-lg bottom-0" style="height: 5em; background-color: rgba(0, 0, 0, 1);">
+			<div class="container">
+				<a class="navbar-brand text-white">
+					<p>Copyright © KKN-PPM UGM Kota Pariaman,<br>Sumatra Barat Periode II Tahun 2024</p>
+				</a>
+			</div>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="{{ url_for('static', filename='custom.js')}}"></script>
 	</body>
 </html>
