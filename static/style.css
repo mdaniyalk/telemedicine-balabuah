@@ -70,14 +70,18 @@ p {
   }
 
 .chat{
-	margin-bottom: auto;
-	margin-top: 4.5em;
+	margin-bottom: 5vh;
+	margin-top: 5vh;
 }
 .card{
-	height: 80%;
+	height: 80vh;
 	border-radius: 15px !important;
-	background-color: rgba(243, 243, 243, 0.5) !important;
-	
+	background-color: rgba(243, 243, 243, 0.25) !important;
+}
+@media(max-height: 576px){
+	.contacts_card{
+	margin-bottom: 15px !important;
+}
 }
 .contacts_body{
 	padding:  0.75rem 0 !important;
@@ -546,9 +550,10 @@ tbody td {
   }
   
 .navbar p {
-	font-size: var(--copyright-font-size);
+	font-size: 1.5vh;
 	font-weight: var(--font-weight-light);
 	text-align: start;
 	white-space: normal;
+	color: #F3F3F3;
   }
   
