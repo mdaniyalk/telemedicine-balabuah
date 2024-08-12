@@ -77,6 +77,13 @@ p {
 	height: 80vh;
 	border-radius: 15px !important;
 	background-color: rgba(243, 243, 243, 0.25) !important;
+	margin-top: 3em;
+}
+@media (max-width: 576px) {
+	.card {
+		height: 72.5vh;
+		margin-top: 1.75em;
+	}
 }
 @media(max-height: 576px){
 	.contacts_card{
@@ -198,7 +205,7 @@ p {
 	margin-left: 15px;
 }
 .user_info span{
-	font-size: 24px;
+	font-size: 1.5em;
 	color: black;
 }
 .user_info p{
@@ -452,6 +459,49 @@ tbody td {
 	color: var(--white-color);
 	font-size: var(--h5-font-size);
 	font-weight: var(--font-weight-bold);
+  }
+
+.footer-msg{
+	font-size: 14px; 
+	color: rgba(255, 255, 255, 0.5); 
+	text-align: center;
+}
+  @media (max-width: 576px) {
+    .navbar-brand,
+    .navbar-brand:hover {
+      font-size: calc(var(--h5-font-size) * 0); /* Make font size smaller for smaller screens */
+    }
+	.navbar {
+		padding-left: 0.5em;
+		padding-right: 0.5em;
+	}
+	.user_info span{
+		font-size: 1em;
+	}
+	.img_cont{
+		position: relative;
+		height: 50px;
+		width: 50px;
+	}
+	.user_img{
+		height: 50px;
+		width: 50px;
+		border:1.5px solid #f5f6fa;
+	
+	}
+	.online_icon{
+		position: absolute;
+		height: 15px;
+		width:15px;
+		background-color: #4cd137;
+		border-radius: 50%;
+		bottom: 0em;
+		right: 0em;
+		border:1.5px solid black;
+	}
+	.footer-msg{
+		font-size: 10px; 
+	}
   }
 
   

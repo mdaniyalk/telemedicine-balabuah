@@ -6,7 +6,7 @@
 <html>
 	<head>
 		<title>Telemedicine Balabuah | KKN-PPM UGM Kota Pariaman</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 		<link rel="icon" type="image/png" href="{{ url_for('static', filename='logo-balabuah-icon.webp')}}">
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;400;700&display=swap" rel="stylesheet">
@@ -48,7 +48,7 @@
 			<div class="row justify-content-center h-100">        
 				<div class="col-md-10 col-lg-6 chat">
 					
-					<div class="card mt-5">
+					<div class="card">
 						<div class="card-header msg_head">
 							<div class="d-flex bd-highlight">
 								<div class="img_cont">
@@ -69,7 +69,7 @@
 									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
 								</div>
 							</form>
-							<p style="font-size: 14px; color: rgba(255, 255, 255, 0.5); text-align: center;">Chatbot ini didukung dengan referensi berkualitas tinggi, tetapi kadang tidak akurat. Untuk info lebih lanjut, hubungi dokter.</p>
+							<p class="footer-msg">Chatbot ini didukung dengan referensi berkualitas tinggi, tetapi kadang tidak akurat. Untuk info lebih lanjut, hubungi dokter.</p>
 						</div>
 					</div>
 					<!-- <div class="center-image mt-4">
