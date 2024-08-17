@@ -18,8 +18,11 @@ def retrieval_qa_prompt():
     """
     prompt_template = """
     Given the context below, answer the question at the end. 
-    If the question is just a statement or a greeting (like hi, hai, hello, halo, etc.), you can ignore the context to just answer that.
-    
+
+    Rules:
+    1. If the question is a simple statement or greeting (e.g., hi, hai, hello, halo), you may respond directly without referring to the context.
+    2. If the question does not pertain to health, mental health, nutrition, or any other medical/health-related topic, guide the user to ask a health-related question instead.
+
     Context:
     {context}
 
