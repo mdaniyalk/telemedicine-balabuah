@@ -44,7 +44,7 @@ def openai_chat(question,
         raise ValueError("Please set the model name in the params.")
         
     if system_message is None:
-        system_message = "You are a helpful assistant."
+        system_message = "You are a helpful health related assistant, so please just answers the question related to health or medical topic."
         print("Please set the params system_message.")
         print('Using default system message of "You are a helpful assistant.".')
     
