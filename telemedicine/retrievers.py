@@ -54,8 +54,8 @@ class Retrieval(BaseRetrievers):
         Returns:
             The result of the retrieval process as a string.
         """
-        # self.prepare_retrivers(question=question, **kwargs)
-        self.ensemble_retriever = None
+        self.prepare_retrivers(**kwargs)
+        # self.ensemble_retriever = None
         qa = CustomRetrievalQA(llm=self.llm, 
                                retriever=self.ensemble_retriever, 
                                prompt=self.prompt)
@@ -68,18 +68,15 @@ class Retrieval(BaseRetrievers):
 
 
     def prepare_retrivers(self, 
-                          question: str,
                           **kwargs: Any) -> None:
         """
         Prepare the retrievers for the retrieval process.
-
-        Args:
-            db_folder_paths (List[str]): List of folder paths for vector databases.
-            vectordbs (List[VectorDB]): List of VectorDB objects.
         """
 
-        vectordb = VectorDB(embedding_model="text-embedding-3-small",
-                            openai_api_key=os.getenv('OPENAI_API_KEY'))
+        vectordb = VectorDB(
+            model_name="",
+            embedding_model="BAAI/bge-small-en-v1.5" 
+        )   
         vectordb.load_local()
         len_k = 5
         default_retriever = vectordb.as_retriever(

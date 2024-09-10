@@ -51,8 +51,19 @@ class CustomRetrievalQA:
             clean_docs += _clean_docs
         if history:
             question = self.combine_questions(question, standalone_question)
-        final_prompt = self.prompt.template.replace("{context}", "\n".join(clean_docs))
-        final_prompt = final_prompt.replace("{question}", question)
+        final_prompt = self.prompt.template.replace("{question}", question)
+        initial_response, token_usage = openai_chat(
+            question=final_prompt,
+            system_message=self.system_prompt, 
+            model=self.model, 
+            max_tokens=4096, 
+            temperature=0.75,
+            return_usage=True
+        )
+        self.token_usage.append(token_usage)
+        clean_docs.append(initial_response)
+        final_prompt = final_prompt.replace("{context}", self.context_processor(clean_docs))
+        print("final_prompt", final_prompt)
         response, token_usage = openai_chat(
             question=final_prompt,
             system_message=self.system_prompt, 
@@ -82,3 +93,12 @@ class CustomRetrievalQA:
         )
         self.token_usage.append(token_usage)
         return response
+    
+    def context_processor(self, contexts):
+        context = ""
+        for i, c in enumerate(contexts):
+            context += f"context {i}: \n{c}\n"
+            if i < len(contexts) - 1:
+                context += "-----\n"
+            context += "\n"
+        return context
