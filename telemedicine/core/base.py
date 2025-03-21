@@ -52,12 +52,12 @@ def openai_chat(question,
     if history is not None:
         messages.append({"role": "user", "content": f"Chat History: {history}"})
     messages.append({"role": "user", "content": question})
-    if model == "llama3-8b-8192":
+    if model == "llama-3.2-1b-preview":
         not_complete = True
         while not_complete:
             try:
-                client, model_id = groq_wrapper()
-                model_id = f"{model}-{model_id}"
+                client = groq_wrapper()
+                model_id = f"{model}"
                 completion = client.chat.completions.create(
                     model=model,
                     seed=42,
@@ -95,19 +95,13 @@ def groq_wrapper():
     """
     Wrapper function to replace OpenAI with Groq API.
     """
-    import random
     load_dotenv(".env")
-    a = random.randint(1, 100)
-    b = random.randint(1, 100)
-    i = random.randint(a, a*b) % 5
-    api_key = os.getenv(f'GROQ_API_KEY_{i}')
-    print(f"Using Groq API Key {i}")
+    api_key = os.getenv('GROQ_API_KEY')
     client = OpenAI(
         api_key=api_key, 
         base_url='https://api.groq.com/openai/v1',
     )
-    model_id = i
-    return client, model_id
+    return client
 
 
 @retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))

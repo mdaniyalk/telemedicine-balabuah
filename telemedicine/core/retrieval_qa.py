@@ -28,7 +28,7 @@ class CustomRetrievalQA:
             self.api_key = os.getenv('OPENAI_API_KEY')
         except Exception as e:
             raise ValueError(f"Please set the openai_key in env file. Error: {str(e)}")
-        self.model = "llama3-8b-8192"
+        self.model = "llama-3.2-1b-preview"
         self.token_usage = []
 
     def __call__(self, question, history=None, return_usage=True):

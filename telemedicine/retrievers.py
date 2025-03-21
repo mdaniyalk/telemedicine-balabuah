@@ -18,6 +18,7 @@ from telemedicine.core.prompt_template import (
     multi_query_retriver_prompt,
     retrieval_qa_prompt
 )
+from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from telemedicine.core.retrieval_qa import CustomRetrievalQA
 
 
@@ -31,7 +32,7 @@ class Retrieval(BaseRetrievers):
     def __init__(self, **kwargs) -> None:
         self.prompt = retrieval_qa_prompt()
         self.llm = ChatOpenAI(
-            model_name='llama3-8b-8192',
+            model_name="llama-3.2-1b-preview",
             max_tokens=4096,  
             openai_api_key=os.getenv('GROQ_API_KEY'), 
             openai_api_base="https://api.groq.com/openai/v1",
@@ -80,6 +81,6 @@ class Retrieval(BaseRetrievers):
         vectordb.load_local()
         len_k = 5
         default_retriever = vectordb.as_retriever(
-            search_type="mmr", search_kwargs={'k': len_k, 'fetch_k': 5*len_k })
+            search_type="similarity", search_kwargs={'k': len_k, 'fetch_k': 5*len_k })
         self.ensemble_retriever = default_retriever
 
