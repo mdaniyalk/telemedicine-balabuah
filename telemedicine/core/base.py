@@ -32,13 +32,6 @@ def openai_chat(question,
         str: The response message from the chat.
     """
     load_dotenv(".env")
-    if api_key is None:
-        try:
-            openai_api_key = os.getenv('OPENAI_API_KEY')
-        except Exception as e:
-            raise ValueError("Please set the api_key in the params or on the environment variable.")
-    else:
-        openai_api_key = api_key
 
     if model is None:
         raise ValueError("Please set the model name in the params.")
@@ -52,32 +45,18 @@ def openai_chat(question,
     if history is not None:
         messages.append({"role": "user", "content": f"Chat History: {history}"})
     messages.append({"role": "user", "content": question})
-    if model == "llama-3.2-1b-preview":
-        not_complete = True
-        while not_complete:
-            try:
-                client = groq_wrapper()
-                model_id = f"{model}"
-                completion = client.chat.completions.create(
-                    model=model,
-                    seed=42,
-                    messages=messages,
-                    **kwargs
-                )
-                not_complete = False
-            except:
-                continue
-    else:
-        client = OpenAI(
-            api_key=openai_api_key
-        )
-        model_id = f"{model}"
-        completion = client.chat.completions.create(
-            model=model,
-            seed=42,
-            messages=messages,
-            **kwargs
-        )
+    client = OpenAI(
+        api_key=os.getenv('API_KEY'), 
+        base_url=os.getenv('BASE_URL'),
+    )
+    model_id = f"{model}-" + os.getenv('PROVIDER')
+    completion = client.chat.completions.create(
+        model=model,
+        seed=42,
+        messages=messages,
+        **kwargs
+    )
+    
 
     response_content = completion.choices[0].message.content
     if return_usage:
@@ -91,17 +70,7 @@ def openai_chat(question,
     else:
         return response_content
 
-def groq_wrapper():
-    """
-    Wrapper function to replace OpenAI with Groq API.
-    """
-    load_dotenv(".env")
-    api_key = os.getenv('GROQ_API_KEY')
-    client = OpenAI(
-        api_key=api_key, 
-        base_url='https://api.groq.com/openai/v1',
-    )
-    return client
+
 
 
 @retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))
