@@ -33,8 +33,7 @@ def openai_chat(question,
     """
     load_dotenv(".env")
 
-    if model is None:
-        raise ValueError("Please set the model name in the params.")
+    model = os.getenv('MODEL_NAME')
         
     if system_message is None:
         system_message = "You are a helpful health related assistant, so please just answers the question related to health or medical topic."

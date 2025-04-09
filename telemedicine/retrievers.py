@@ -32,10 +32,10 @@ class Retrieval(BaseRetrievers):
     def __init__(self, **kwargs) -> None:
         self.prompt = retrieval_qa_prompt()
         self.llm = ChatOpenAI(
-            model_name="llama-3.2-1b-preview",
+            model_name=os.getenv('MODEL_NAME'),
             max_tokens=4096,  
-            openai_api_key=os.getenv('GROQ_API_KEY'), 
-            openai_api_base="https://api.groq.com/openai/v1",
+            openai_api_key=os.getenv('API_KEY'), 
+            openai_api_base=os.getenv('BASE_URL'),
             temperature=0.1
         )
         self.token_usage = []
