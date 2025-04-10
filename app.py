@@ -22,10 +22,11 @@ def index():
         return render_template("chat.html")
     else:
         if app_state["last_check"] == datetime.now(datetime.UTC).strftime("%d-%m-%Y"):
-            return render_template("chat_limited.html")
+            return render_template("chat_limit.html")
         else:
             app_state["num_request"] = 0
             app_state["last_check"] = datetime.now(datetime.UTC).strftime("%d-%m-%Y")
+            return render_template("chat.html")
 
 @app.route("/start-session", methods=["GET"])
 def start_session():
