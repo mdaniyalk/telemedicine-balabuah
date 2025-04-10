@@ -38,6 +38,7 @@ def start_session():
 @app.route("/chat", methods=["GET", "POST"])
 def chat():
     # try:
+        app_state["num_request"] += 1
         import time
 
         start_time = time.time()  # Start timing the process
