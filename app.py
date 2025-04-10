@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 import markdown2 as markdown
 from dotenv import load_dotenv
@@ -12,10 +13,19 @@ from telemedicine.session import ChatSession
 
 
 app = Flask(__name__)
- 
+
+app_state = {'num_request': 0, "last_check": ""}
+
 @app.route("/")
 def index():
-    return render_template("chat.html")
+    if app_state["num_request"] < 50:
+        return render_template("chat.html")
+    else:
+        if app_state["last_check"] == datetime.now(datetime.UTC).strftime("%d-%m-%Y"):
+            return render_template("chat_limited.html")
+        else:
+            app_state["num_request"] = 0
+            app_state["last_check"] = datetime.now(datetime.UTC).strftime("%d-%m-%Y")
 
 @app.route("/start-session", methods=["GET"])
 def start_session():

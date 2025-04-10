@@ -11,7 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy.spatial.distance import cdist
 
 
-@retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))
+# @retry(wait=wait_random_exponential(multiplier=0.5, max=5), stop=stop_after_attempt(3))
 def openai_chat(question, 
                 system_message: Optional[str] = None, 
                 model: Optional[str] = None, 

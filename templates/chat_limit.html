@@ -57,16 +57,27 @@
 								</div>
 								<div class="user_info">
 									<span style="color: F3F3F3;">Asisten Kesehatan Virtual dari Balabuah!</span>
-									<!-- <p>Asisten Kesehatan Virtual dari Balabuah!</p> -->
 								</div>
 							</div>
 						</div>
+					
+						<!-- LIMIT MESSAGE -->
+						<div class="alert alert-warning text-center m-0" role="alert">
+							<i>
+								<strong>It looks like you've used up your 50 requests for today.</strong><br>
+								The limit resets daily, so feel free to check back tomorrow!<br>
+							</i>
+							<strong>Sepertinya Anda telah mencapai batas 50 permintaan hari ini.</strong><br>
+							Batas ini akan direset setiap hari, jadi silakan kembali besok!
+						</div>
+					
 						<div id="messageFormeight" class="card-body msg_card_body"></div>
+					
 						<div class="card-footer">
 							<form id="messageArea" class="input-group">
-								<input type="text" id="text" name="msg" placeholder="Ketikkan pesan anda..." autocomplete="off" class="form-control type_msg" required/>
+								<input type="text" id="text" name="msg" placeholder="Ketikkan pesan anda..." autocomplete="off" class="form-control type_msg" disabled />
 								<div class="input-group-append">
-									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
+									<button type="submit" id="send" class="input-group-text send_btn" disabled><i class="fas fa-location-arrow"></i></button>
 								</div>
 							</form>
 							<p class="footer-msg">
@@ -78,6 +89,7 @@
 							</p>
 						</div>
 					</div>
+					
 					<!-- <div class="center-image mt-4">
 						<img src="{{ url_for('static', filename='telemedicine-kkn.webp')}}" alt="Centered Image" class="centered-img">
 					</div> -->
